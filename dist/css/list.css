@@ -1,0 +1,323 @@
+html{
+    font-size: 625%;
+}
+*{
+    padding: 0;
+    margin: 0;
+}
+li{
+    list-style: none;
+}
+body {
+    background-color: #fff;
+    line-height: 150%;
+    font-size: 0.16rem;
+}
+.padding{
+    padding: 0.15rem 0.15rem 0rem 0.15rem;
+}
+.text16{
+    font-size: 0.16rem;
+    line-height: 150%;
+}
+.text14{
+    font-size: 0.14rem;
+    line-height: 150%;
+}
+.text12{
+    font-size: 0.12rem;
+    line-height: 150%;
+}
+/*a{
+    font-size: 0.10rem;
+    line-height: 150%;
+}*/
+.colorGray{
+    color:#9B9B9B;
+}
+.color7A1AE0{
+    color:#7A1AE0
+}
+/*社区帖子的样式*/
+.bbs-post:not(:last-child),.bbs-post-comment:not(:last-child){
+    border-bottom:1px solid #F0F0F0;
+    margin-bottom: 0.15rem;
+}
+ul.classify-meun li a{
+    display: block;
+}
+ul.classify-meun li:hover,ul.classify-meun li:focus,ul.classify-meun li:active{
+    border-bottom: 3px solid #a922ff;
+}
+.bbs-content li{
+    display: inline-block;
+}
+.bbs-post-self{
+    margin-bottom:0.2rem;
+    width: auto;
+}
+.bbs-headPic>img{
+    width: 0.29rem;
+    height: 0.29rem;
+    float: left;
+    margin-right: 0.07rem;
+    border-radius: 50%;
+}
+.bbs-comment-body{
+    box-sizing:border-box;
+    /* padding-bottom:10px;
+     border-bottom:1px solid #c6c6c6;*/
+    /*实现展开和收起功能增加的高度*/
+    overflow: hidden;
+    position: relative;
+}
+.bbs-comment-header{
+    padding-bottom: 10px;
+}
+.bbs-post-self{
+    overflow: hidden;
+}
+.sendComLI{
+    padding:10px;
+}
+.all-content{
+    overflow: hidden;
+    margin-left:15px;
+    min-height:73px;
+}
+
+.bbs-comment-footer{
+    box-sizing: border-box;
+    overflow: hidden;
+    /* margin-bottom: 20px;*/
+    height:50px;
+    margin-top: 5px;
+}
+.comment-footer{
+    margin: 10px 0;
+}
+.detailWord,.social-complete{
+    display:block;
+    border: 0px;
+    overflow: hidden;
+}
+.pm{
+    overflow: hidden;
+    min-height: 42px;
+}
+.hotComment{
+    background-color: #fff;
+    z-index:99;
+    padding: 0.15rem;border-bottom: 1px solid #F0F0F0;
+}
+.hotComment li{
+    display: block;
+}
+.commentFix{
+    position: fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+}
+#cover,.cover{
+    display: none;
+    position: fixed;
+   /* width: 100%;*/
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-items: center;
+    justify-content: center;
+}
+#cover img{
+    width: 100%;
+}
+span{
+    width: 22px;
+    height: 20px;
+    overflow: hidden;
+    background: url(../../dist/img/icon.png) no-repeat;
+    /*background-size:249px 163.5px;*/
+    background-size:249px 163.5px;
+    vertical-align: middle;
+}
+.sumTop{
+    display: inline-block;
+    background-position: -12px -21px;
+    vertical-align: middle;
+    margin-left: 0.1rem;
+}
+.showBgImg{
+    width: 249px;
+    height: 163.5px;
+    overflow: hidden;
+    background: url(../../dist/img/icon.png) no-repeat;
+    background-size:249px 163.5px;
+}
+.subComment{
+    background-color: #F0F0F0;
+    margin-left:0.36rem;
+}
+.showBgImg11{
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    background: url(../../dist/img/icon.png) no-repeat;
+}
+/*.sprit{
+    height: 24px;
+    font-size: 14px;
+    line-height: 24px;
+    text-align: left;
+    !*overflow: hidden;*!
+}*/
+.likeIcon{
+    float: right;
+    vertical-align: top;
+    position: relative;
+}
+.dianzhan{
+    display: inline-block;
+    background-position: -50px -62px;
+    vertical-align: middle;
+}
+.download{
+    display: inline-block;
+    background-position: -117px -20px;
+    vertical-align: middle;
+}
+.address{
+    background-position: -120.5px -54.5px;
+    float: left;
+    width: 17px;
+    height: 23px;
+}
+.arrow{
+    background-position: -120.5px -56.5px;
+    width: 17px;
+    height: 23px;
+}
+.publicTime{
+    margin-right: 0.02rem;
+    font-size: 0.12rem;
+    line-height:150%;
+    color:#9B9B9B;
+}
+/*语音的样式*/
+.audio{
+    border: 1px solid #ffffff;
+    box-shadow:0px 0px 10px 0px rgba(0,0,0,0.25);
+    position: absolute;
+    border-top-right-radius: 4rem;
+    border-top-left-radius: 4rem;
+    border-bottom-left-radius: 4rem;
+    border-bottom-right-radius: 4rem;
+    top:5px;
+    width: 100%;
+    left:5px;
+    /*left:50%;
+    margin-left: -40%;*/
+}
+.details{
+    height:0.35rem;
+    width:100%;
+    text-align: right;
+    display: table;
+    overflow: hidden;
+    position: relative;
+}
+.allTimes{
+    text-align: right;
+    display: table-cell;
+    vertical-align: middle;
+    width:0.2rem;
+    padding-right: 0.1rem;
+}
+.expires{
+    text-align: center;
+    display: table-cell;
+    vertical-align: middle;
+    width:5rem;
+    padding-right: 0.1rem;
+}
+.series{
+    display: table-cell;
+    vertical-align: middle;
+    width: 0.2rem;
+    padding-top:3px;
+    height:30px;
+}
+.series span{
+    width: 35px;
+    height: 32px;
+    float: left;
+    background-position: 0px -94px;
+}
+.audioword{
+    position: absolute;
+    right:0;
+}
+.IsloadMore, .IsloadEnd, .IsloadAgain, .noComments {
+    text-align: center;
+    padding: 0.1rem 0;
+    cursor: pointer;
+}
+.countMemberTop{
+    background-color: #F0F0F0;
+    padding: 0.1rem;
+    position: relative;
+    overflow: hidden;
+    height: 0.49rem;
+    line-height: 0.29rem;
+    width:100%;
+    box-sizing: border-box;
+}
+.countMemberTop>div>a{
+    width: 0.29rem;
+    height: 0.29rem;
+    border-radius: 50%;
+    display: inline-block;
+}
+.sumTop{
+
+}
+.thumbnailHidden {
+    width: 31%;
+    display: inline-block;
+    padding-right:1%;
+    overflow: hidden;
+    position: relative;
+    /*height: 0;*/
+    /*padding-bottom: 30%;*/
+    /*background: blue;*/
+}
+.oneImg{
+    width: 100%;
+    display: inline-block;
+    overflow: hidden;
+    position: relative;
+}
+.twoImg{
+    width: 48%;
+    display: inline-block;
+    padding-right:1%;
+    overflow: hidden;
+    position: relative;
+}
+.thumbnailHidden>img,.oneImg>img,.twoImg>img {
+    width:100%;
+}
+.comment-img{
+
+}
+.btn{
+    border-radius: 6px;
+    border: 2px solid rgba(256,256,256,0.4);
+    padding:3px 30px;
+}
