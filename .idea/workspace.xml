@@ -76,8 +76,8 @@
       <file leaf-file-name="app.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.36619717">
-              <caret line="245" column="83" selection-start-line="245" selection-start-column="83" selection-end-line="245" selection-end-column="83" />
+            <state vertical-scroll-proportion="0.23943663">
+              <caret line="232" column="23" selection-start-line="232" selection-start-column="23" selection-end-line="234" selection-end-column="30" />
               <folding>
                 <element signature="n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="false" />
                 <element signature="n#div#3;n#div#0;n#body#0;n#html#0;n#!!top" expanded="false" />
@@ -97,9 +97,9 @@
                 <element signature="n#style#0;n#button#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
-                <element signature="e#13047#14133#0" expanded="false" />
-                <element signature="e#17597#18850#0" expanded="false" />
-                <element signature="e#23096#24063#0" expanded="false" />
+                <element signature="e#13025#14111#0" expanded="false" />
+                <element signature="e#17575#18828#0" expanded="false" />
+                <element signature="e#23074#24041#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -470,9 +470,9 @@
             <element signature="n#style#0;n#button#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="e#13047#14133#0" expanded="false" />
-            <element signature="e#17597#18850#0" expanded="false" />
-            <element signature="e#23096#24063#0" expanded="false" />
+            <element signature="e#13025#14111#0" expanded="false" />
+            <element signature="e#17575#18828#0" expanded="false" />
+            <element signature="e#23074#24041#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -874,8 +874,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.36619717">
-          <caret line="245" column="83" selection-start-line="245" selection-start-column="83" selection-end-line="245" selection-end-column="83" />
+        <state vertical-scroll-proportion="0.23943663">
+          <caret line="232" column="23" selection-start-line="232" selection-start-column="23" selection-end-line="234" selection-end-column="30" />
           <folding>
             <element signature="n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="false" />
             <element signature="n#div#3;n#div#0;n#body#0;n#html#0;n#!!top" expanded="false" />
@@ -895,9 +895,9 @@
             <element signature="n#style#0;n#button#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="e#13047#14133#0" expanded="false" />
-            <element signature="e#17597#18850#0" expanded="false" />
-            <element signature="e#23096#24063#0" expanded="false" />
+            <element signature="e#13025#14111#0" expanded="false" />
+            <element signature="e#17575#18828#0" expanded="false" />
+            <element signature="e#23074#24041#0" expanded="false" />
           </folding>
         </state>
       </provider>
