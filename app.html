@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
- <!--   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=8">
     <meta http-equiv="Expires" content="0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
-    <meta http-equiv="Cache" content="no-cache">-->
+    <meta http-equiv="Cache" content="no-cache">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
     <meta charset="UTF-8">
     <title>资讯详情页</title>
@@ -66,19 +66,21 @@
 <div id="app">
     <div class="text16 padding" id="content" v-html="context" v-cloak>
     </div>
-    <div class="countMemberTop" v-cloak>
+    <div class="countMemberTop" v-cloak @click="jump()">
         <div style="float: left;">
-            <a class="headerImg"><img src="dist/img/head.png" style="width: 100%"></a>
+            <a class="headerImg" v-for="vote in voteData">
+                <img :src="vote.user.HeadImgURL" style="width: 100%;border-radius: 50%;">
+            </a>
         </div>
         <div style="float: right;line-height:inherit" class="text12">
-            等18人点赞
-            <span class="sumTop" @click="jump()"></span>
+           {{voteSum}}人点赞
+            <span class="sumTop"></span>
         </div>
     </div>
     <div class="hotComment" id="commentBarHot">热门评论</div>
     <div class="text14 padding" id="hot" v-cloak>
         <ol class="comments-items">
-            <li class="bbs-post stairCom" v-for="list in items">
+            <li class="bbs-post stairCom" v-for="(list,index) in items">
                 <div class="bbs-post-self" :id="list.id">
                     <div class="bbs-headPic">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
@@ -90,7 +92,7 @@
                                 <a class="text12 colorGray">{{new Date(list.createTime*1000).toLocaleString()}}</a>
                             </div>
                             <div class="sprit likeIcon">
-                                <span class="dianzhan" @click="likeComment($event)"></span>
+                                <span :class="[list.vote==1?dianzhan:downvote]" @click="likeComment($event,list,index)"></span>
                                 <a class="color7A1AE0 text12">{{list.upvotes}}</a>
                             </div>
                         </div>
@@ -139,6 +141,7 @@
                                         {{subCom.text}}
                                         <span class="publicTime">{{beforeTime(subCom.createTime*1000)}}前</span>
                                     </p>
+                                    <div class="color7A1AE0 text14" v-if="subCom.Children>2" @click="jumpSubCom(list.id)">更多{{subCom.Children}}条回复</div>
                                 </div>
                             </div>
                         </li>
@@ -151,7 +154,7 @@
     <div class="hotComment" id="commentBarAll">全部评论</div>
     <div class="allComment padding" v-cloak id="all">
         <ol class="comments-items">
-            <li class="bbs-post stairCom" v-for="list in items" :id="list.id">
+            <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id">
                 <div class="bbs-post-self">
                     <div class="bbs-headPic">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
@@ -163,7 +166,7 @@
                                 <a class="text12 colorGray">{{new Date(list.createTime*1000).toLocaleString()}}</a>
                             </div>
                             <div class="sprit likeIcon">
-                                <span class="dianzhan" @click="likeComment($event)"></span>
+                                <span :class="[list.vote==0?downvote:dianzhan]" @click="likeComment($event,list,index)"></span>
                                 <a class="color7A1AE0 text12">{{list.upvotes}}</a>
                             </div>
                         </div>
@@ -212,6 +215,7 @@
                                         {{subCom.text}}
                                         <span class="publicTime">{{beforeTime(subCom.createTime*1000)}}前</span>
                                     </p>
+                                    <div class="color7A1AE0 text14" v-if="subCom.Children>2" @click="jumpSubCom(list.id)">更多{{subCom.Children}}条回复</div>
                                 </div>
                             </div>
                         </li>
@@ -228,7 +232,7 @@
                     <div class="swiperImg"><img :src="img.src" :data-src="img.lazysrc"></div>
                     <div style="width:100%;color:white;padding-bottom: 10px;" class="swiperDetail details">
                         <div class="series text16" id="seriesImg">
-                            <a style="padding:0px 10px">{{key}}/{{imageList.length}}</a>
+                            <a style="padding:0px 10px">{{key+1}}/{{imageList.length}}</a>
                         </div>
                         <div class="expires text14">
                           <a class="btn">查看原图{{img.size}}</a>
@@ -242,15 +246,33 @@
             </div>
         </div>
     </div>
-    <button :disabled="dis" style="position: fixed;top:0;padding:10px;display: none">你好啊</button>
+    <button style="display: block;padding:10px;"><a @click="tools()">dddddd</a></button>
 </div>
 <div class="cover" id="tips" style="align-content: center;flex-direction:column;background-color: transparent">
     <div style="padding:10px 5px;background-color: rgba(0,0,0,0.5);border-radius: 4px;"></div>
 </div>
+
 <script src="dist/js/jquery3.js"></script>
 <script src="dist/js/vue.js"></script>
 <script src="dist/js/swiper.min.js"></script>
 <script>
+    var main={};
+    (function(self,$){
+        self.vm=new Vue({
+            el:"#tips",
+            data:{
+                list:[1,23,4,5],
+            },
+            methods:{
+                aaa:function(){
+                    console.log("333");
+                }
+            }
+        })
+        self.bb=function(){
+            console.log("my name is bb")
+        }
+    })(main,jQuery)
     var Tips=function(str,param){
         var p="";
         $("#tips").css("display","flex");
@@ -258,13 +280,25 @@
             p=param
         }
         $("#tips div").html(str+p);
-//        setTimeout(function(){
-//            $("#tips").css("display","none");
-//        },3000)
+        setTimeout(function(){
+            $("#tips").css("display","none");
+        },3000)
     }
     $("#audiosrc").on("canplay",function(){
         playaudio();
     })
+    function setLevel(level){
+        switch (level){
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+        }
+    }
     function playaudio(){
         var aud=document.getElementById("audiosrc");
         var playTimes=aud.duration;
@@ -299,14 +333,16 @@
             }
         })
     }
-    (function(){
+    var comment={};
+    (function(self,$){
         function request(url,fn){
             $.ajax({
+
                 url:url,
                 method:"GET",
                 contentType:"application/json",
                 beforeSend : function(xhr) {
-
+                    xhr.setRequestHeader("If-Modified-Since","0");
                 },
                 error:function(){
                     Tips("网络出错,请稍后重试");
@@ -317,6 +353,9 @@
                     }
                 }
             })
+        }
+        self.newComment=function(){
+            console.log("ddd")
         }
         function setImgWidht(){
             var w=$(".oneImg").css("width");
@@ -332,19 +371,17 @@
         }
         function parseAppURL(){
              var cxtURL = window.blemobi.getFrameUrl();
-             alert(cxtURL);
              var url = JSON.parse(cxtURL);
-             alert(url.url);
              var arr = url.url.split("&bodyurl=");
-             alert(arr);
-             var UUID = arr[0].split(/&|=/);
-             alert("uuid");
-             alert(UUID);
+             var UUID = arr[0].split("?");
+            var postid = arr[0].split(/&|=/);
             var obj={
                 htmlurl:arr[1],
-                uuid:UUID[1],
-                postid:UUID[3],
+                comment:UUID[1],
+                postid:postid[3],
+                uuid:postid[1]
             }
+            return obj;
         }
         function setPosition(){
             //全部评论和热门评论显示在顶部
@@ -370,7 +407,7 @@
                 }
             })
         }
-       var vm=new Vue({
+       self.vm=new Vue({
            el:"#app",
            data:{
                items:[],
@@ -378,16 +415,22 @@
                context:"",
                offset:0,
                dis:false,
+               voteSum:0,
+               voteData:[],
+               downVote:0,
+               dianzhan:"dianzhan",
+               downvote:"downvote",
            },
            mounted:function() {
                console.log("111");
                var that = this;
                that.items = [];
                var u = "http://192.168.5.105:80/v1/news/guest/newsfeed/html?id=24",
-                       uu="http://192.168.5.105/comment/guest/loadcomment?count=20&postid=19&offset=0&uuid=1493048811581296819";
-//               var urlObj=parseAppURL();
-//               var comURL="http://192.168.5.105/comment/guest/loadcomment?count=20&offset=0&postid="+urlObj.postid+"&uuid="+urlObj.uuid;
-               request(u, function (data) {
+                       uu="http://192.168.5.105/comment/guest/loadcomment?count=2&postid=19&offset=0&uuid=1493048811581296819";
+               var urlObj=parseAppURL();
+               alert(urlObj);
+               var comURL="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&"+urlObj.comment;
+               request(urlObj.htmlurl, function (data) {
                    console.log("data", data)
                    that.context = data;
                    var content = data;
@@ -404,6 +447,7 @@
                        $("#content img").each(function (index, _this) {
                            console.log(_this)
                            $(_this).click(function () {
+                               blemobi.showPic();
                                console.log("eee", index);
                                $("body").css("overflow", "hidden");
                                $("#cover").css("display", "flex");
@@ -414,57 +458,143 @@
                        })
                    })
                })
-               request(uu,function(data){
+               alert("评论的url"+comURL);
+               request(comURL,function(data){
                        console.log("data",data)
                        that.items=data.comments;
-                       that.offset=20;
+                       that.offset=2;
+                   console.log("dianzhan==",that.items);
                        Vue.nextTick(function(){
                            console.log($(".oneImg img").length);
+                           blemobi.showPic();
                            setImgWidht()
                            setPosition()
                        })
+               })
+               /**
+                *@note   获取点赞的用户列表,游客模式
+                *@path   /v1/news/guest/vote/users
+                *@method GET
+                *@param  id      帖子ID
+                *@param  offset  偏移, 为上次返回的数目.默认0
+                *@param  count   每次查询条数, 默认10, 最大50
+                *@return  成功返回 PNewsVoteUserList,失败返回PResult
+                */
+               request("http://192.168.5.105/v1/news/guest/vote/users?offset=0&count=6&id="+urlObj.postid,function(data){
+                   console.log("data==",data);
+                   that.voteSum=data.total;
+                   that.voteData=data.list;
                })
                $("#cover").click(function(e){
                    e.preventDefault();
                    e.stopPropagation();
                    if(e.target!=="download") {
+                       blemobi.hidePic();
                        $("body").css("overflow", "auto");
                        $("#cover").css("display", "none");
                    }
                })
              },
            methods:{
+               tools:function(){
+                   javascript:(function () { var script = document.createElement('script'); script.src="http://eruda.liriliri.io/eruda.min.js"; document.body.appendChild(script); script.onload = function () { eruda.init() } })();
+               },
                jump:function(){
-//                   sendJumpToApp()
+                   blemobi.sendJumpToVoted()
+               },
+               jumpSubCom:function(id){
+                   blemobi.jumpSecondComment(id);
+               },
+               sendClosePicToWeb11:function(){
+                   alert(1111);
+                   $("body").css("overflow", "auto");
+                   $("#cover").css("display", "none");
                },
                downloadImg:function(src){
-                   var img=new Image();
+                   var e=event||window.event;
+                   var img1= $(e.currentTarget).parents(".details").siblings(".swiperImg").children("img");
+                   console.log("img==",img1);
+                   var img=img1[0]
                    img.setAttribute('crossOrigin', 'anonymous');
-                   img.src=src;
                    console.log("src==",img.src)
                    var can=document.createElement("canvas");
                    var c=can.getContext("2d");
-                   img.onload=function(){
-                       can.heigth=img.height;
-                       can.width=img.width;
+                   img.onload=function() {
+                       can.heigth = img.height;
+                       can.width = img.width;
                        c.fillStyle = "#fff";
                        c.fillRect(0, 0, can.width, can.height);
-                       c.drawImage(img,0,0);
-                       var base64=can.toDataURL("image/jpeg");
-                       var arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                       c.drawImage(img, 0, 0);
+                       var base64 = can.toDataURL("image/jpeg");
+                       console.log("base64",base64);
+                   //    blemobi.downloadPic(base64)
+                     /*  var arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1],
                                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-                       while(n--){
+                       while (n--) {
                            u8arr[n] = bstr.charCodeAt(n);
                        }
-                       console.log("blob==",new Blob([u8arr], {type:mime}));
+                       console.log("blob==", new Blob([u8arr], {type: mime}));
 //                       sendBlobToApp(new Blob([u8arr], {type:mime}));
-                       return new Blob([u8arr], {type:mime});
+                       return new Blob([u8arr], {type: mime});*/
                    }
+                /*   var img=new Image();
+                   request(src1,function(src){
+                       img.setAttribute('crossOrigin', 'anonymous');
+                       img.src=src;
+                       console.log("src==",img.src)
+                       var can=document.createElement("canvas");
+                       var c=can.getContext("2d");
+                       img.onload=function(){
+                           can.heigth=img.height;
+                           can.width=img.width;
+                           c.fillStyle = "#fff";
+                           c.fillRect(0, 0, can.width, can.height);
+                           c.drawImage(img,0,0);
+                           var base64=can.toDataURL("image/jpeg");
+                           var arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                                   bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                           while(n--){
+                               u8arr[n] = bstr.charCodeAt(n);
+                           }
+                           console.log("blob==",new Blob([u8arr], {type:mime}));
+//                       sendBlobToApp(new Blob([u8arr], {type:mime}));
+                           return new Blob([u8arr], {type:mime});
+                       }
+                   })*/
+
                },
-               likeComment:function(e){
+               likeComment:function(e,list,index){
                    this.dis=!this.dis;
-                   $(e.currentTarget).css("background-position","-15.5px -62px");
-//                   sendLikeToApp()
+                   /*if(list.vote==1){
+                       list.vote=0;
+                   }else{
+                       list.vote=1;
+                   }*/
+                   var v=1;
+                   if(list.vote==1){
+                       v=0;
+                   }
+                   console.log("list",list.vote,v);
+                   blemobi.clickVoted(list.id.toString(), v.toString(),index.toString());
+
+               },
+               votedSuccess:function (id,vote,index){
+                   var key=parseInt(index)
+                    var list=this.item[key];
+                    alert("调用web中的js方法成功");
+                    if(vote==0){
+                        list.vote=0;
+                        list.upvotes=list.upvotes-1;
+                    }else{
+                        list.vote=1;
+                        list.upvotes=list.upvotes+1;
+                    }
+
+               },
+               votedNewsSuccess:function(){
+                  var obj= blemobi.getVotedHeadImg()
+                   this.voteSum=this.voteSum+1;
+                   this.voteData.push({user:{HeadImgURL:obj.headUrl,Level:obj.level}});
                },
                showImg:function(e,index){
                    var that=this
@@ -494,41 +624,39 @@
                },
                loadMoreCom:function(){
                    var that=this;
-//                   var urlObj=parseAppURL();
+                   var urlObj=parseAppURL();
                    var
 //                           comURL="http://192.168.5.105/comment/guest/loadcomment?count=20&postid="+urlObj.postid+"&uuid="+urlObj.uuid+"&offset="+that.offset,
-                           uu="http://192.168.5.105/comment/guest/loadcomment?count=20&postid=19&offset=0&uuid=1493048811581296819";;
-                   request(uu,function(data){
+                           uu="http://192.168.5.105/comment/guest/loadcomment?count=2&postid=19&offset=0&uuid=1493048811581296819",
+                           url="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&"+urlObj.comment
+                           uu1="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&uuid=1493051392875521593&postid=36";
+                   request(uu1,function(data){
+                       alert(uu1);
+                       Tips(data.comments.length);
                        if(data&&data.comments){
+                       console.log("data==",data);
+                       if(!that.items){
+                           that.items=[];
+                           console.log(that.items)
+                       }
                            that.items=that.items.concat(data.comments);
+                         /*  for(var i=0;i<data.comments.length;i++){
+                               console.log("data[i]==",data.comments[i])
+                               console.log(that.items)
+                               console.log(that.items==[]);
+                               if(!that.items){
+                                   that.items=[];
+                                   console.log(that.items)
+                               }
+                               that.items[i]=data.comments[i];
+                           }*/
+//                           that.items=data.comments.concat(that.items);
                            Vue.nextTick(function(){
                                setImgWidht();
                            })
-                           that.offset=that.offset+20;
+                           that.offset=that.offset+2;
                        }
                    })
-                /*   $.ajax({
-                       url:"http://192.168.5.105:80/comment/guest/loadcomment?count=20&postid=19&offset=0&uuid=1493048811581296819",
-                       method:"GET",
-                       contentType:"application/json",
-                       beforeSend : function(xhr) {
-
-                       },
-                       success:function(data){
-                           console.log("data",data)
-                           that.items=that.items.concat(data.comments);
-
-                           var w=$(".oneImg").css("width");
-                           var h=0.5625*parseInt(w);
-                           $(".oneImg").css("height",h+"px");
-
-                           var w=$(".twoImg").css("width");
-                           $(".twoImg").css("height",w);
-
-                           var w=$(".thumbnailHidden").css("width");
-                           $(".thumbnailHidden").css("height",w);
-                       }
-                   })*/
                },
                beforeTime:function(publicTime){
                    var publicTime=new Date(publicTime);
@@ -560,8 +688,7 @@
                }
            }
        })
-    })()
-
+    })(comment,jQuery)
 </script>
 </body>
 </html>

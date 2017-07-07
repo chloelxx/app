@@ -134,6 +134,7 @@ ul.classify-meun li:hover,ul.classify-meun li:focus,ul.classify-meun li:active{
     overflow-y: auto;
     align-items: center;
     justify-content: center;
+    z-index:999;
 }
 #cover img{
     width: 100%;
@@ -182,9 +183,14 @@ span{
     vertical-align: top;
     position: relative;
 }
-.dianzhan{
+.downvote{
     display: inline-block;
     background-position: -50px -62px;
+    vertical-align: middle;
+}
+.dianzhan{
+    display: inline-block;
+    background-position:-15.5px -62px;
     vertical-align: middle;
 }
 .download{
@@ -278,10 +284,10 @@ span{
     width:100%;
     box-sizing: border-box;
 }
-.countMemberTop>div>a{
+.headerImg{
     width: 0.29rem;
     height: 0.29rem;
-    border-radius: 50%;
+    padding-right:2px;
     display: inline-block;
 }
 .sumTop{
