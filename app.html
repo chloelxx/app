@@ -68,7 +68,7 @@
     </div>
     <div class="countMemberTop" v-cloak @click="jump()">
         <div style="float: left;">
-            <a class="headerImg" v-for="vote in voteData">
+            <a class="headerImg" v-for="(vote,key) in voteData" v-if="key<5">
                 <img :src="vote.user.HeadImgURL" style="width: 100%;border-radius: 50%;">
             </a>
         </div>
@@ -81,6 +81,7 @@
     <div class="text14 padding" id="hot" v-cloak>
         <ol class="comments-items">
             <li class="bbs-post stairCom" v-for="(list,index) in items">
+                <div>{{list}}</div>
                 <div class="bbs-post-self" :id="list.id">
                     <div class="bbs-headPic">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
@@ -155,6 +156,7 @@
     <div class="allComment padding" v-cloak id="all">
         <ol class="comments-items">
             <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id">
+                <div>{{list}}</div>
                 <div class="bbs-post-self">
                     <div class="bbs-headPic">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
@@ -166,7 +168,7 @@
                                 <a class="text12 colorGray">{{new Date(list.createTime*1000).toLocaleString()}}</a>
                             </div>
                             <div class="sprit likeIcon">
-                                <span :class="[list.vote==0?downvote:dianzhan]" @click="likeComment($event,list,index)"></span>
+                                <span :class="[list.vote==1?dianzhan:downvote]" @click="likeComment($event,list,index)"></span>
                                 <a class="color7A1AE0 text12">{{list.upvotes}}</a>
                             </div>
                         </div>
@@ -448,6 +450,7 @@
                            console.log(_this)
                            $(_this).click(function () {
                                blemobi.showPic();
+                               alert("正文的图片")
                                console.log("eee", index);
                                $("body").css("overflow", "hidden");
                                $("#cover").css("display", "flex");
@@ -466,7 +469,6 @@
                    console.log("dianzhan==",that.items);
                        Vue.nextTick(function(){
                            console.log($(".oneImg img").length);
-                           blemobi.showPic();
                            setImgWidht()
                            setPosition()
                        })
@@ -489,6 +491,7 @@
                    e.preventDefault();
                    e.stopPropagation();
                    if(e.target!=="download") {
+                       alert("关闭图片")
                        blemobi.hidePic();
                        $("body").css("overflow", "auto");
                        $("#cover").css("display", "none");
@@ -510,14 +513,21 @@
                    $("body").css("overflow", "auto");
                    $("#cover").css("display", "none");
                },
+               sendClosePicToWeb:function(){
+                   alert(1111);
+                   $("body").css("overflow", "auto");
+                   $("#cover").css("display", "none");
+               },
                downloadImg:function(src){
-                   var e=event||window.event;
+                  /* var e=event||window.event;
                    var img1= $(e.currentTarget).parents(".details").siblings(".swiperImg").children("img");
                    console.log("img==",img1);
                    var img=img1[0]
                    img.setAttribute('crossOrigin', 'anonymous');
                    console.log("src==",img.src)
-                   var can=document.createElement("canvas");
+                   var src=img.src;*/
+                   blemobi.downloadPic(src);
+                  /* var can=document.createElement("canvas");
                    var c=can.getContext("2d");
                    img.onload=function() {
                        can.heigth = img.height;
@@ -528,15 +538,15 @@
                        var base64 = can.toDataURL("image/jpeg");
                        console.log("base64",base64);
                    //    blemobi.downloadPic(base64)
-                     /*  var arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                     /!*  var arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1],
                                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
                        while (n--) {
                            u8arr[n] = bstr.charCodeAt(n);
                        }
                        console.log("blob==", new Blob([u8arr], {type: mime}));
 //                       sendBlobToApp(new Blob([u8arr], {type:mime}));
-                       return new Blob([u8arr], {type: mime});*/
-                   }
+                       return new Blob([u8arr], {type: mime});*!/
+                   }*/
                 /*   var img=new Image();
                    request(src1,function(src){
                        img.setAttribute('crossOrigin', 'anonymous');
@@ -574,13 +584,15 @@
                    if(list.vote==1){
                        v=0;
                    }
+                  // console.log("comment==",comment.vm.votedSuccess(1,1,1));
                    console.log("list",list.vote,v);
                    blemobi.clickVoted(list.id.toString(), v.toString(),index.toString());
 
                },
                votedSuccess:function (id,vote,index){  //app点赞成功后掉web端的函数
                    var key=parseInt(index)
-                    var list=this.item[key];
+                   console.log("this.items==",this.items);
+                    var list=this.items[key];
                     alert("调用web中的js方法成功"+id+vote+index);
                     if(vote==0){
                         list.vote=0;
@@ -592,9 +604,19 @@
 
                },
                votedNewsSuccess:function(){
-                  var obj= blemobi.getVotedHeadImg()
-                   this.voteSum=this.voteSum+1;
-                   this.voteData.push({user:{HeadImgURL:obj.headUrl,Level:obj.level}});
+                  var objApp= blemobi.getVotedHeadImg();
+                   alert(objApp)
+                   var obj=JSON.parse(objApp);
+                   alert(obj)
+                   if(obj.type){
+                       this.voteSum=this.voteSum+1;
+                       this.voteData.push({user: {HeadImgURL: obj.headUrl, Level: obj.level}});
+
+                   }else{
+                       this.voteSum=this.voteSum-1;
+                       this.voteData.splice(this.voteData.length-1);
+                   }
+
                },
                showImg:function(e,index){
                    var that=this
@@ -630,8 +652,8 @@
                            uu="http://192.168.5.105/comment/guest/loadcomment?count=2&postid=19&offset=0&uuid=1493048811581296819",
                            url="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&"+urlObj.comment
                            uu1="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&uuid=1493051392875521593&postid=36";
-                   request(uu1,function(data){
-                       alert(uu1);
+                   request(url,function(data){
+                       alert(url);
                        Tips(data.comments.length);
                        if(data&&data.comments){
                        console.log("data==",data);
@@ -688,6 +710,7 @@
                }
            }
        })
+//        return vm;
     })(comment,jQuery)
 </script>
 </body>
