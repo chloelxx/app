@@ -578,10 +578,10 @@
                    blemobi.clickVoted(list.id.toString(), v.toString(),index.toString());
 
                },
-               votedSuccess:function (id,vote,index){
+               votedSuccess:function (id,vote,index){  //app点赞成功后掉web端的函数
                    var key=parseInt(index)
                     var list=this.item[key];
-                    alert("调用web中的js方法成功");
+                    alert("调用web中的js方法成功"+id+vote+index);
                     if(vote==0){
                         list.vote=0;
                         list.upvotes=list.upvotes-1;
