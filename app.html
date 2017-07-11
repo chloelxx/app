@@ -71,7 +71,7 @@
         <div style="float: left;">
             <a class="headerImg" v-for="(vote,key) in voteData" v-if="key<5">
                 <img :src="vote.user.HeadImgURL" style="width: 100%;border-radius: 50%;">
-                <a :class="setLevel(voteData.Level)"></a>
+                <span :class="setLevel(vote.user.Level)"></span>
             </a>
         </div>
         <div style="float: right;line-height:inherit" class="text12">
@@ -94,7 +94,7 @@
                                 <a class="text12 colorGray">{{new Date(list.createTime*1000).toLocaleString()}}</a>
                             </div>
                             <div class="sprit likeIcon">
-                                <span :class="[list.vote==1?dianzhan:downvote]" @click="likeComment($event,list,index)"></span>
+                                <span :class="[list.vote==1?dianzhan:downvote]" @click="likeComment($event,list,index,1)"></span>
                                 <a class="color7A1AE0 text12">{{list.upvotes}}</a>
                             </div>
                         </div>
@@ -168,7 +168,7 @@
                                 <a class="text12 colorGray">{{new Date(list.createTime*1000).toLocaleString()}}</a>
                             </div>
                             <div class="sprit likeIcon">
-                                <span :class="[list.vote==1?dianzhan:downvote]" @click="likeComment($event,list,index)"></span>
+                                <span :class="[list.vote==1?dianzhan:downvote]" @click="likeComment($event,list,index,0)"></span>
                                 <a class="color7A1AE0 text12">{{list.upvotes}}</a>
                             </div>
                         </div>
@@ -243,7 +243,6 @@
                             <span class="download" @click="downloadImg(img.src)"></span>
                         </div>
                     </div>
-                    <div>是发送到发送到</div>
                 </div>
                 <!--<div class="swiper-slide" v-for="(img,key) in imageList">silde {{key}}</div>-->
             </div>
@@ -369,19 +368,8 @@
             $(".thumbnailHidden").css("height",w);
 
         }
-        function parseAppURL(){
-            var cxtURL={};
-            if(jugePhoneType()==1){
-                 cxtURL = window.blemobi.getFrameUrl();
-            }else{
-                alert("ios")
-                cxtURL= window.webkit.messageHandlers.getFrameUrl.postMessage(null);
-                alert(cxtURL)
-            }
-
-
-             var url = JSON.parse(cxtURL);
-             var arr = url.url.split("&bodyurl=");
+        function parseAppURL(url){
+             var arr = url.split("&bodyurl=");
              var UUID = arr[0].split("?");
             var postid = arr[0].split(/&|=/);
             var obj={
@@ -416,7 +404,19 @@
                 }
             })
         }
-       self.vm=new Vue({
+        /*这段代码是固定的，必须要放到js中*/
+        function setupWebViewJavascriptBridge(callback) {
+            if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
+            if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
+            window.WVJBCallbacks = [callback];
+            var WVJBIframe = document.createElement('iframe');
+            WVJBIframe.style.display = 'none';
+            WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
+            document.documentElement.appendChild(WVJBIframe);
+            setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
+        }
+
+        self.vm=new Vue({
            el:"#app",
            data:{
                items:[],
@@ -431,9 +431,32 @@
                downvote:"downvote",
                contentImg:[],
                hotItems:[],
+               swiper:null,
+               hot:0,
            },
            mounted:function() {
-               console.log("111");
+               var cxtURL,that=this;
+               alert(11111);
+               if(jugePhoneType()==1){
+                   cxtURL = window.blemobi.getFrameUrl();
+                   console.log("cxtURL==",cxtURL);
+                   alert(cxtURL);
+                   var url = JSON.parse(cxtURL);
+                   var parseURL=parseAppURL(url.url);
+                   console.log("parseURL==",parseURL);
+                   this.getAppURLData(parseURL);
+               }else{
+                   alert("ios")
+                   setupWebViewJavascriptBridge(function(bridge) {
+                       bridge.callHandler('getFrameUrl',{}, function(response) {
+                           alert(response);
+                           var parseURL=parseAppURL(response);
+                           alert(parseURL);
+                           that.getAppURLData(parseURL);
+                       })
+                   })
+               }
+              /* console.log("111");
                var that = this;
                that.items = [];
                var u = "http://192.168.5.105:80/v1/news/guest/newsfeed/html?id=24",
@@ -501,7 +524,7 @@
                        setPosition()
                    })
                })
-               /**
+               /!**
                 *@note   获取点赞的用户列表,游客模式
                 *@path   /v1/news/guest/vote/users
                 *@method GET
@@ -509,7 +532,7 @@
                 *@param  offset  偏移, 为上次返回的数目.默认0
                 *@param  count   每次查询条数, 默认10, 最大50
                 *@return  成功返回 PNewsVoteUserList,失败返回PResult
-                */
+                *!/
                request("http://192.168.5.105/v1/news/guest/vote/users?offset=0&count=6&id="+urlObj.postid,function(data){
                    console.log("data==",data);
                    that.voteSum=data.total;
@@ -527,17 +550,149 @@
                        $("body").css("overflow", "auto");
                        $("#cover").css("display", "none");
                    }
-               })
+               })*/
              },
            methods:{
+               getAppURLData:function(urlObj){
+                   var that = this;
+                   that.items = [];
+                   var u = "http://192.168.5.105:80/v1/news/guest/newsfeed/html?id=24",
+                           uu="http://192.168.5.105/comment/guest/loadcomment?count=2&postid=19&offset=0&uuid=1493048811581296819";
+                   var comURL="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&"+urlObj.comment;
+                   request(urlObj.htmlurl, function (data) {
+                       console.log("data", data)
+                       that.context = data;
+                       var content = data;
+                       var img = new Image();
+                       if (content != "") {
+                           if (content.indexOf("<img") != -1) {
+                               content.replace(/<img [^>]*src=['"]([^'"]+)[^>]*>/gi, function (match, capture) {
+                                   that.contentImg.push({src: capture});
+                               })
+                           }
+                       }
+                       console.log("img==", that.contentImg);
+                       Vue.nextTick(function () {
+                           $("#content img").each(function (index, _this) {
+                               console.log(_this)
+                               $(_this).click(function () {
+                                   that.imageList=that.contentImg;
+                                   if(jugePhoneType()==1){
+                                       blemobi.showPic();
+                                   }else{
+                                       setupWebViewJavascriptBridge(function(bridge) {
+                                           bridge.callHandler('showPic',{}, function(response) {
+                                               alert(response);
+                                               var parseURL=parseAppURL(response);
+                                               alert(parseURL);
+                                               that.getAppURLData(parseURL);
+                                           })
+                                       })
+                                   }
+
+//                                   $('html').css("height","100%").css("overflow","hidden");
+                                   $('body').css({"height":"100%","overflow":"hidden"});
+                                   console.log("eee", index);
+                                   $("#cover").css("overflow-y", "hidden").css("display", "flex");
+                                   Vue.nextTick(function(){
+                                        that.swiper = new Swiper('.swiper-container', {
+                                           initialSlide: index
+                                       });
+                                       console.log("swiper==",that.swiper)
+                                   })
+
+                               })
+                           })
+                       })
+                   })
+                   var hotURL="http://192.168.5.105/comment/guest/loadcomment?count=20&offset=0&sort=3"+urlObj.comment;
+                   request(hotURL,function(data){
+                       console.log("data",data);
+                       if(data.comments&&data.comments.length>0) {
+                           that.hotItems = data.comments;
+                           Vue.nextTick(function () {
+                               console.log($(".oneImg img").length);
+                               setImgWidht()
+                               setPosition()
+                           })
+                       }
+                   })
+                   request(comURL,function(data){
+                       console.log("data",data)
+                       if(data.comments&&data.comments.length>0) {
+                           that.items = data.comments;
+                           that.offset = 2;
+                           console.log("dianzhan==", that.items);
+                           Vue.nextTick(function () {
+                               console.log($(".oneImg img").length);
+                               setImgWidht()
+                               setPosition()
+                           })
+                       }
+                   })
+                   /**
+                    *@note   获取点赞的用户列表,游客模式
+                    *@path   /v1/news/guest/vote/users
+                    *@method GET
+                    *@param  id      帖子ID
+                    *@param  offset  偏移, 为上次返回的数目.默认0
+                    *@param  count   每次查询条数, 默认10, 最大50
+                    *@return  成功返回 PNewsVoteUserList,失败返回PResult
+                    */
+                   request("http://192.168.5.105/v1/news/guest/vote/users?offset=0&count=6&id="+urlObj.postid,function(data){
+                       console.log("data==",data);
+                       alert(data);
+                       if(data.list){
+                           that.voteSum=data.total;
+                           that.voteData=data.list;
+                       }
+                   })
+                   $("#cover").click(function(e){
+                       e.preventDefault();
+                       e.stopPropagation();
+                       if(e.target!=="download") {
+                           if(jugePhoneType()==1){
+                               blemobi.hidePic();
+                           }else{
+                               setupWebViewJavascriptBridge(function(bridge) {
+                                   bridge.callHandler('hidePic',{}, function(response) {
+                                       alert(22);
+                                       var parseURL=parseAppURL(response);
+                                       alert(parseURL);
+                                       that.getAppURLData(parseURL);
+                                   })
+                               })
+                           }
+                           $("body").css("overflow", "auto");
+                           $("#cover").css("display", "none");
+                       }
+                   })
+               },
                tools:function(){
                    javascript:(function () { var script = document.createElement('script'); script.src="http://eruda.liriliri.io/eruda.min.js"; document.body.appendChild(script); script.onload = function () { eruda.init() } })();
                },
                jump:function(){
-                   blemobi.sendJumpToVoted()
+                   if(jugePhoneType()==1) {
+                       blemobi.sendJumpToVoted()
+                   }else{
+                       setupWebViewJavascriptBridge(function(bridge) {
+                           bridge.callHandler('sendJumpToVoted',{}, function(response) {
+
+                           })
+                       })
+                   }
                },
                jumpSubCom:function(id){
-                   blemobi.jumpSecondComment(id);
+                   if(jugePhoneType()==1) {
+                       blemobi.jumpSecondComment(id);
+                   }else{
+                       setupWebViewJavascriptBridge(function(bridge) {
+                           bridge.callHandler('jumpSecondComment',{id:id}, function(response) {
+
+                           })
+                       })
+                   }
+
                },
                sendClosePicToWeb11:function(){
                    $("body").css("overflow", "auto");
@@ -556,113 +711,144 @@
                    }
                },
                downloadImg:function(src){
-                  /* var e=event||window.event;
-                   var img1= $(e.currentTarget).parents(".details").siblings(".swiperImg").children("img");
-                   console.log("img==",img1);
-                   var img=img1[0]
-                   img.setAttribute('crossOrigin', 'anonymous');
-                   console.log("src==",img.src)
-                   var src=img.src;*/
-                   blemobi.downloadPic(src);
-                  /* var can=document.createElement("canvas");
-                   var c=can.getContext("2d");
-                   img.onload=function() {
-                       can.heigth = img.height;
-                       can.width = img.width;
-                       c.fillStyle = "#fff";
-                       c.fillRect(0, 0, can.width, can.height);
-                       c.drawImage(img, 0, 0);
-                       var base64 = can.toDataURL("image/jpeg");
-                       console.log("base64",base64);
-                   //    blemobi.downloadPic(base64)
-                     /!*  var arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1],
-                               bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-                       while (n--) {
-                           u8arr[n] = bstr.charCodeAt(n);
-                       }
-                       console.log("blob==", new Blob([u8arr], {type: mime}));
-//                       sendBlobToApp(new Blob([u8arr], {type:mime}));
-                       return new Blob([u8arr], {type: mime});*!/
-                   }*/
-                /*   var img=new Image();
-                   request(src1,function(src){
-                       img.setAttribute('crossOrigin', 'anonymous');
-                       img.src=src;
-                       console.log("src==",img.src)
-                       var can=document.createElement("canvas");
-                       var c=can.getContext("2d");
-                       img.onload=function(){
-                           can.heigth=img.height;
-                           can.width=img.width;
-                           c.fillStyle = "#fff";
-                           c.fillRect(0, 0, can.width, can.height);
-                           c.drawImage(img,0,0);
-                           var base64=can.toDataURL("image/jpeg");
-                           var arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1],
-                                   bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-                           while(n--){
-                               u8arr[n] = bstr.charCodeAt(n);
-                           }
-                           console.log("blob==",new Blob([u8arr], {type:mime}));
-//                       sendBlobToApp(new Blob([u8arr], {type:mime}));
-                           return new Blob([u8arr], {type:mime});
-                       }
-                   })*/
+                   if(jugePhoneType()==1) {
+                       blemobi.downloadPic(src);
+                   }else{
+                       setupWebViewJavascriptBridge(function(bridge) {
+                           bridge.callHandler('downloadPic',src, function(response) {
 
+                           })
+                       })
+                   }
                },
-               likeComment:function(e,list,index){
+               likeComment:function(e,list,index,hot){
                    this.dis=!this.dis;
                    /*if(list.vote==1){
                        list.vote=0;
                    }else{
                        list.vote=1;
                    }*/
-                   var v=1;
+                   this.hot=hot;
+                   var v= 1,that=this;
                    if(list.vote==1){
                        v=0;
                    }
                   // console.log("comment==",comment.vm.votedSuccess(1,1,1));
                    console.log("list",list.vote,v);
-                   blemobi.clickVoted(list.id.toString(), v.toString(),index.toString());
+                   if(jugePhoneType()==1) {
+                       blemobi.clickVoted(list.id.toString(), v.toString(),index.toString());
+                   }else{
+                       setupWebViewJavascriptBridge(function(bridge) {
+                           bridge.callHandler('clickVoted',{id:list.id,vote:v,index:index}, function(resp) {
+                               alert(resp);
+                               var res=JSON.parse(resp);
+                               alert(res);
+                               that.votedSuccess(res.id,res.vote,res.index)
+                           })
+                       })
+                   }
 
                },
                votedSuccess:function (id,vote,index){  //app点赞成功后掉web端的函数
-                   var key=parseInt(index)
+                   var key=parseInt(index),lenHot=this.hotItems.length,hotItems=this.hotItems,
+                           len=this.items.length,items=this.items;
                    console.log("this.items==",this.items);
-                    var list=this.items[key];
+                   console.log("this.items==",items,hotItems);
+                   console.log("this.items==",this.hot);
+                   if(this.hot==1){
+                       var hotlist=this.hotItems[key];
+                       for(var i=0;i<len;i++){
+                           if(items[i].id==id){
+                               break;
+                           }
+                       }
+                       alert("hot="+this.hot);
+                      var list=this.items[i];
+                   }else{
+                       alert("hot="+this.hot);
+                      var list=this.items[key];
+                       for(var i=0;i<lenHot;i++){
+                           if(hotItems[i].id==id){
+                               break;
+                           }
+                       }
+                      var hotlist=this.hotItems[i];
+                   }
                     if(vote==0){
                         list.vote=0;
                         list.upvotes=list.upvotes-1;
+                        hotlist.vote=0;
+                        hotlist.upvotes=hotlist.upvotes-1;
                     }else{
                         list.vote=1;
                         list.upvotes=list.upvotes+1;
+                        hotlist.vote=1;
+                        hotlist.upvotes=hotlist.upvotes+1;
                     }
 
                },
                votedNewsSuccess:function(){
-                  var objApp= blemobi.getVotedHeadImg();
-                   var obj=JSON.parse(objApp);
-                   console.log("voteData==",this.voteData);
-                   if(!this.voteData){
-                       this.voteData=[];
-                   }
-                   console.log("voteData==",this.voteData);
-                   if(obj.type==1){
-                       this.voteSum=this.voteSum+1;
-                       this.voteData.push({user: {HeadImgURL: obj.headUrl, Level: obj.level}});
+                   if(jugePhoneType()==1) {
+                       var objApp= blemobi.getVotedHeadImg();
+                       var obj=JSON.parse(objApp);
                        console.log("voteData==",this.voteData);
 
-                   }else{
-                       this.voteSum=this.voteSum-1;
-                       this.voteData.splice(this.voteData.length-1);
                        console.log("voteData==",this.voteData);
+                       if(obj.type==1){
+                           this.voteData.push({user:
+                           {
+                               HeadImgURL: obj.headUrl,
+                               Level: obj.level
+                           }
+                           });
+                           this.voteSum=this.voteSum+1;
+                           console.log("voteData==",this.voteData);
+
+                       }else{
+                           this.voteSum=this.voteSum-1;
+                           this.voteData.splice(this.voteData.length-1);
+                           console.log("voteData==",this.voteData);
+                       }
+                   }else{
+                       setupWebViewJavascriptBridge(function(bridge) {
+                           bridge.callHandler('clickVoted',{}, function(objApp) {
+                               var obj=JSON.parse(objApp);
+                               console.log("voteData==",this.voteData);
+
+                               console.log("voteData==",this.voteData);
+                               if(obj.type==1){
+                                   this.voteData.push({user:
+                                   {
+                                       HeadImgURL: obj.headUrl,
+                                       Level: obj.level
+                                   }
+                                   });
+                                   this.voteSum=this.voteSum+1;
+                                   console.log("voteData==",this.voteData);
+
+                               }else{
+                                   this.voteSum=this.voteSum-1;
+                                   this.voteData.splice(this.voteData.length-1);
+                                   console.log("voteData==",this.voteData);
+                               }
+                           })
+                       })
                    }
+
 
                },
                showImg:function(e,index){
                    var that=this
                    that.imageList=[];
-                   blemobi.showPic();
+                   if(jugePhoneType()==1) {
+                       blemobi.showPic();
+                   }else{
+                       setupWebViewJavascriptBridge(function(bridge) {
+                           bridge.callHandler('showPic',{}, function(res) {
+
+                           })
+                       })
+                   }
                    var img= $(e.currentTarget).parent().find("img");
                    console.log("ddd", $(e.currentTarget).parent().find("img"),e);
 //                   e.stopPropagation();
@@ -670,14 +856,16 @@
                        console.log("ggg",$(img[i]).attr("src"))
                        that.imageList.push({src:$(img[i]).attr("src")}) ;
                    }
-                   Vue.nextTick(function(){
-                       console.log("eee",index);
+                   alert(index+1);
+//                   Vue.nextTick(function(){
+                       console.log("eee",index+1);
                        $("body").css("overflow","hidden");
                        $("#cover").css("display","flex");
-                       var swiper = new Swiper('.swiper-container',{
+                  console.log("swiper==",that.swiper) ;
+                   /*    var swiper = new Swiper('.swiper-container',{
                            initialSlide :index
-                       });
-                   })
+                       });*/
+//                   })
                },
                address:function(p){
                  if(p==""){

@@ -390,7 +390,7 @@
 
                     },
                     error:function(){
-                        alert("error")
+                        alert("error comment load")
                     },
                     success:function(data){
                         console.log("data",data)
@@ -433,6 +433,20 @@
                             })
                         })
 
+                    }
+                })
+                $.ajax({
+                    url:"http://192.168.5.105/v1/news/guest/vote/users?offset=0&count=6&id=19",
+                    method:"GET",
+                    contentType:"application/json",
+                    beforeSend : function(xhr) {
+
+                    },
+                    error:function(){
+                        alert("error comment sum")
+                    },
+                    success:function(data) {
+                        console.log("data", data)
                     }
                 })
                 $("#cover").click(function(e){
