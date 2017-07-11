@@ -55,6 +55,7 @@
         .swiper-container {
             width: 100%;
             height: 100%;
+            overflow: hidden;
             background-color: #000;
         }
         [v-cloak]{
@@ -70,6 +71,7 @@
         <div style="float: left;">
             <a class="headerImg" v-for="(vote,key) in voteData" v-if="key<5">
                 <img :src="vote.user.HeadImgURL" style="width: 100%;border-radius: 50%;">
+                <a :class="setLevel(voteData.Level)"></a>
             </a>
         </div>
         <div style="float: right;line-height:inherit" class="text12">
@@ -80,8 +82,7 @@
     <div class="hotComment" id="commentBarHot">热门评论</div>
     <div class="text14 padding" id="hot" v-cloak>
         <ol class="comments-items">
-            <li class="bbs-post stairCom" v-for="(list,index) in items">
-                <div>{{list}}</div>
+            <li class="bbs-post stairCom" v-for="(list,index) in hotItems">
                 <div class="bbs-post-self" :id="list.id">
                     <div class="bbs-headPic">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
@@ -156,7 +157,6 @@
     <div class="allComment padding" v-cloak id="all">
         <ol class="comments-items">
             <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id">
-                <div>{{list}}</div>
                 <div class="bbs-post-self">
                     <div class="bbs-headPic">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
@@ -243,6 +243,7 @@
                             <span class="download" @click="downloadImg(img.src)"></span>
                         </div>
                     </div>
+                    <div>是发送到发送到</div>
                 </div>
                 <!--<div class="swiper-slide" v-for="(img,key) in imageList">silde {{key}}</div>-->
             </div>
@@ -253,7 +254,6 @@
 <div class="cover" id="tips" style="align-content: center;flex-direction:column;background-color: transparent">
     <div style="padding:10px 5px;background-color: rgba(0,0,0,0.5);border-radius: 4px;"></div>
 </div>
-
 <script src="dist/js/jquery3.js"></script>
 <script src="dist/js/vue.js"></script>
 <script src="dist/js/swiper.min.js"></script>
@@ -289,18 +289,6 @@
     $("#audiosrc").on("canplay",function(){
         playaudio();
     })
-    function setLevel(level){
-        switch (level){
-            case 0:
-                break;
-            case 1:
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
-        }
-    }
     function playaudio(){
         var aud=document.getElementById("audiosrc");
         var playTimes=aud.duration;
@@ -337,6 +325,16 @@
     }
     var comment={};
     (function(self,$){
+        function jugePhoneType(){
+            var ua=navigator.userAgent.toLowerCase();
+            if(/android/.test(ua)){
+                return 1
+            }else if(/iphone|ipad|ipod/.test(ua)){
+                return 2
+            }else{
+                return -1
+            }
+        }
         function request(url,fn){
             $.ajax({
 
@@ -372,7 +370,16 @@
 
         }
         function parseAppURL(){
-             var cxtURL = window.blemobi.getFrameUrl();
+            var cxtURL={};
+            if(jugePhoneType()==1){
+                 cxtURL = window.blemobi.getFrameUrl();
+            }else{
+                alert("ios")
+                cxtURL= window.webkit.messageHandlers.getFrameUrl.postMessage(null);
+                alert(cxtURL)
+            }
+
+
              var url = JSON.parse(cxtURL);
              var arr = url.url.split("&bodyurl=");
              var UUID = arr[0].split("?");
@@ -422,6 +429,8 @@
                downVote:0,
                dianzhan:"dianzhan",
                downvote:"downvote",
+               contentImg:[],
+               hotItems:[],
            },
            mounted:function() {
                console.log("111");
@@ -430,7 +439,6 @@
                var u = "http://192.168.5.105:80/v1/news/guest/newsfeed/html?id=24",
                        uu="http://192.168.5.105/comment/guest/loadcomment?count=2&postid=19&offset=0&uuid=1493048811581296819";
                var urlObj=parseAppURL();
-               alert(urlObj);
                var comURL="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&"+urlObj.comment;
                request(urlObj.htmlurl, function (data) {
                    console.log("data", data)
@@ -440,38 +448,58 @@
                    if (content != "") {
                        if (content.indexOf("<img") != -1) {
                            content.replace(/<img [^>]*src=['"]([^'"]+)[^>]*>/gi, function (match, capture) {
-                               that.imageList.push({src: capture});
+                               that.contentImg.push({src: capture});
                            })
                        }
                    }
-                   console.log("img==", that.imageList);
+                   console.log("img==", that.contentImg);
                    Vue.nextTick(function () {
                        $("#content img").each(function (index, _this) {
                            console.log(_this)
                            $(_this).click(function () {
-                               blemobi.showPic();
-                               alert("正文的图片")
+                               that.imageList=that.contentImg;
+                               if(jugePhoneType()==1){
+                                   blemobi.showPic();
+                               }else{
+                                   window.webkit.messageHandlers.showPic.postMessage();
+                               }
+
+                               $('html').css("height","100%").css("overflow","hidden");
+                               $('body').css({"height":"100%","overflow":"hidden"});
                                console.log("eee", index);
-                               $("body").css("overflow", "hidden");
-                               $("#cover").css("display", "flex");
-                               var swiper = new Swiper('.swiper-container', {
-                                   initialSlide: index
-                               });
+                             //  var h=$(window).height()
+                               $("body").css("overflow-y", "hidden");
+                               $("#cover").css("overflow-y", "hidden").css("display", "flex");
+                               Vue.nextTick(function(){
+                                   var swiper = new Swiper('.swiper-container', {
+                                       initialSlide: index
+                                   });
+                               })
+
                            })
                        })
                    })
                })
-               alert("评论的url"+comURL);
-               request(comURL,function(data){
-                       console.log("data",data)
-                       that.items=data.comments;
-                       that.offset=2;
-                   console.log("dianzhan==",that.items);
+               var hotURL="http://192.168.5.105/comment/guest/loadcomment?count=20&offset=0&sort=3"+urlObj.comment;
+               request(hotURL,function(data){
+                       console.log("data",data);
+                       that.hotItems=data.comments;
                        Vue.nextTick(function(){
                            console.log($(".oneImg img").length);
                            setImgWidht()
                            setPosition()
                        })
+               })
+               request(comURL,function(data){
+                   console.log("data",data)
+                   that.items=data.comments;
+                   that.offset=2;
+                   console.log("dianzhan==",that.items);
+                   Vue.nextTick(function(){
+                       console.log($(".oneImg img").length);
+                       setImgWidht()
+                       setPosition()
+                   })
                })
                /**
                 *@note   获取点赞的用户列表,游客模式
@@ -491,8 +519,11 @@
                    e.preventDefault();
                    e.stopPropagation();
                    if(e.target!=="download") {
-                       alert("关闭图片")
-                       blemobi.hidePic();
+                       if(jugePhoneType()==1){
+                           blemobi.hidePic();
+                       }else{
+                           window.webkit.messageHandlers.showPic.postMessage();
+                       }
                        $("body").css("overflow", "auto");
                        $("#cover").css("display", "none");
                    }
@@ -509,14 +540,20 @@
                    blemobi.jumpSecondComment(id);
                },
                sendClosePicToWeb11:function(){
-                   alert(1111);
                    $("body").css("overflow", "auto");
                    $("#cover").css("display", "none");
                },
                sendClosePicToWeb:function(){
-                   alert(1111);
                    $("body").css("overflow", "auto");
                    $("#cover").css("display", "none");
+               },
+               setLevel:function(level){
+                   switch (level){
+                       case 0:return "level0"
+                       case 1:return "level1"
+                       case 2:return "level2"
+                       case 3:return "level3"
+                   }
                },
                downloadImg:function(src){
                   /* var e=event||window.event;
@@ -593,7 +630,6 @@
                    var key=parseInt(index)
                    console.log("this.items==",this.items);
                     var list=this.items[key];
-                    alert("调用web中的js方法成功"+id+vote+index);
                     if(vote==0){
                         list.vote=0;
                         list.upvotes=list.upvotes-1;
@@ -605,23 +641,28 @@
                },
                votedNewsSuccess:function(){
                   var objApp= blemobi.getVotedHeadImg();
-                   alert(objApp)
                    var obj=JSON.parse(objApp);
-                   alert(obj)
-                   if(obj.type){
+                   console.log("voteData==",this.voteData);
+                   if(!this.voteData){
+                       this.voteData=[];
+                   }
+                   console.log("voteData==",this.voteData);
+                   if(obj.type==1){
                        this.voteSum=this.voteSum+1;
                        this.voteData.push({user: {HeadImgURL: obj.headUrl, Level: obj.level}});
+                       console.log("voteData==",this.voteData);
 
                    }else{
                        this.voteSum=this.voteSum-1;
                        this.voteData.splice(this.voteData.length-1);
+                       console.log("voteData==",this.voteData);
                    }
 
                },
                showImg:function(e,index){
                    var that=this
                    that.imageList=[];
-
+                   blemobi.showPic();
                    var img= $(e.currentTarget).parent().find("img");
                    console.log("ddd", $(e.currentTarget).parent().find("img"),e);
 //                   e.stopPropagation();
@@ -653,7 +694,6 @@
                            url="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&"+urlObj.comment
                            uu1="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&uuid=1493051392875521593&postid=36";
                    request(url,function(data){
-                       alert(url);
                        Tips(data.comments.length);
                        if(data&&data.comments){
                        console.log("data==",data);
