@@ -14,6 +14,9 @@ body {
     font-size: 0.16rem;
     height:100%;
 }
+#content img{
+    width:100%;
+}
 .padding{
     padding: 0.15rem 0.15rem 0rem 0.15rem;
 }
@@ -57,11 +60,16 @@ ul.classify-meun li:hover,ul.classify-meun li:focus,ul.classify-meun li:active{
     margin-bottom:0.2rem;
     width: auto;
 }
-.bbs-headPic>img{
+.bbs-headPic{
     width: 0.29rem;
     height: 0.29rem;
     float: left;
-    margin-right: 0.07rem;
+    margin-right: 10px;
+    position: relative;
+}
+.bbs-headPic>img{
+    width: 0.29rem;
+    height: 0.29rem;
     border-radius: 50%;
 }
 .bbs-comment-body{
@@ -200,10 +208,12 @@ span{
     vertical-align: middle;
 }
 .address{
-    background-position: -120.5px -54.5px;
-    float: left;
-    width: 17px;
-    height: 23px;
+    background-position: -122.5px -60.5px;
+    display: inline-block;
+    padding:0;
+    margin:0;
+    width: 11px;
+    height: 15px;
 }
 .arrow{
     background-position: -120.5px -56.5px;
@@ -220,14 +230,15 @@ span{
 .audio{
     border: 1px solid #ffffff;
     box-shadow:0px 0px 10px 0px rgba(0,0,0,0.25);
-    position: absolute;
+    position: relative;
     border-top-right-radius: 4rem;
     border-top-left-radius: 4rem;
     border-bottom-left-radius: 4rem;
     border-bottom-right-radius: 4rem;
     top:5px;
-    width: 100%;
+    width: 90%;
     left:5px;
+    margin-bottom: 10px;
     /*left:50%;
     margin-left: -40%;*/
 }
@@ -291,23 +302,27 @@ span{
     padding-right:2px;
     display: inline-block;
     position: relative;
+    margin-right: 7px;
 }
-.headerImg>a{
+.headerImg>span,.bbs-headPic>span{
     position: absolute;
     right:-3px;
     bottom: 0px;
+    width:15px;
+    height:15px;
 }
 .level0{
-
+    background-position: -109px -133px;
 }
 .level1{
-
+    background-position: -77px -133px;
 }
 .level2{
-
+    background-position: -46px -133px;
 }
 .level3{
 
+    background-position:  -15px -133px;
 }
 .thumbnailHidden {
     width: 31%;
@@ -333,7 +348,10 @@ span{
     position: relative;
 }
 .thumbnailHidden>img,.oneImg>img,.twoImg>img {
-    width:100%;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    min-height: 100%;
 }
 .comment-img{
 

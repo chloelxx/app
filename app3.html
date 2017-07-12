@@ -68,7 +68,10 @@
     </div>
     <div class="countMemberTop" v-cloak>
         <div style="float: left;">
-            <a class="headerImg"><img src="dist/img/head.png" style="width: 100%"></a>
+            <a class="headerImg">
+                <img src="dist/img/head.png" style="width: 100%">
+                <span class="level0"></span>
+            </a>
         </div>
         <div style="float: right;line-height:inherit" class="text12">
             等18人点赞
@@ -300,6 +303,30 @@
         })
     }
     (function(){
+        function setPosition(){
+            //全部评论和热门评论显示在顶部
+            var hTop=$(" #commentBarHot ").offset().top;
+            var aTop=$("#commentBarAll").offset().top
+            $(window).scroll(function(){
+                var h=$("#all").css("height");
+                var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+                var viewportSize = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+                var x =scrollTop+viewportSize- hTop- $(window).height();
+                var y=scrollTop+viewportSize-aTop-$(window).height();
+                if(x>=0){
+                    $("#commentBarHot").css("position","fixed").css("top","0").css("left",0).css("right",0);
+                    $("#commentBarAll").css("position","relative");
+                }else{
+                    $("#commentBarHot").css("position","relative");
+                }
+                if(y>=0){
+                    $("#commentBarAll").css("position","fixed").css("top","0").css("left",0).css("right",0);
+                    $("#commentBarHot").css("position", "relative");
+                }else{
+                    $("#commentBarAll").css("position", "relative");
+                }
+            })
+        }
         var vm=new Vue({
             el:"#app",
             data:{
@@ -407,30 +434,7 @@
 
                             var w=$(".thumbnailHidden").css("width");
                             $(".thumbnailHidden").css("height",w);
-
-//                           全部评论和热门评论显示在顶部
-                            var hTop=$("#commentBarHot").offset().top;
-                            var aTop=$("#commentBarAll").offset().top
-                            $(window).scroll(function(){
-                                var h=$("#all").css("height");
-                                var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
-                                var viewportSize = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-                                var x =scrollTop+viewportSize-hTop- $(window).height();
-                                var y=scrollTop+viewportSize-aTop- $(window).height();
-                                if(x>=0){
-                                    $("#commentBarHot").css("position","fixed").css("top","0").css("left",0).css("right",0);
-                                    $("#commentBarAll").css("position","relative");
-                                }else{
-                                    $("#commentBarHot").css("position","relative");
-                                }
-                                if(y>=0){
-                                    $("#commentBarAll").css("position","fixed").css("top","0").css("left",0).css("right",0);
-                                    $("#commentBarHot").css("position","relative");
-                                }else{
-                                    $("#commentBarAll").css("position","relative");
-                                }
-                                console.log("x==,y==",x,y)
-                            })
+                            setPosition()
                         })
 
                     }
@@ -518,7 +522,7 @@
                 loadMoreCom:function(){
                     var that=this;
                     $.ajax({
-                        url:"http://192.168.5.105:80/comment/guest/loadcomment?count=20&postid=19&offset=0&uuid=1493048811581296819",
+                        url:"http://192.168.5.105:80/comment/guest/loadcomment?count=20&postid=36&offset=0&uuid=1493048811581296819",
                         method:"GET",
                         contentType:"application/json",
                         beforeSend : function(xhr) {
