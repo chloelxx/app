@@ -56,7 +56,7 @@
 <!-- Swiper -->
 <div id="showImg" class="showImg">
     <div class="swiper-container">
-        <div class="swiper-wrapper">
+        <div class="swiper-wrapper" v-cloak>
            <div class="swiper-slide" v-for="(img,key) in imageList">
                <div class="swiperImg"><img :src="img.src" :data-src="img.lazysrc"></div>
                 <div style="width:100%;color:white;padding-bottom: 10px;" class="swiperDetail details">
@@ -78,96 +78,9 @@
 <script src="dist/js/jquery3.js"></script>
 <script src="dist/js/vue.js"></script>
 <script src="dist/js/swiper.min.js"></script>
+<script src="dist/js/main.js"></script>
 <script>
-    function jugePhoneType(){
-        var ua=navigator.userAgent.toLowerCase();
-        if(/android/.test(ua)){
-            return 1
-        }else if(/iphone|ipad|ipod/.test(ua)){
-            return 2
-        }else{
-            return -1
-        }
-    }
-    /*这段代码是固定的，必须要放到js中*/
-    function setupWebViewJavascriptBridge(callback) {
-        if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
-        if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
-        window.WVJBCallbacks = [callback];
-        var WVJBIframe = document.createElement('iframe');
-        WVJBIframe.style.display = 'none';
-        WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
-        document.documentElement.appendChild(WVJBIframe);
-        setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
-    }
-    var showImg={};
-    (function(self,$){
-        self.img=new Vue({
-            el:"#showImg",
-            data:{
-               imageList:[],
-               curImgIndex:0,
-            },
-            mounted:function(){
-                var that=this,obj;
-                if(jugePhoneType()==1) {
-                    var jsStr = blemobi.getImageData();
-                     obj = JSON.parse(jsStr);
-                    var images= JSON.parse(obj.images);
-                    alert(obj.index);
-                    that.newSwiper(images,obj.index);
-                }else{
-                    setupWebViewJavascriptBridge(function(bridge) {
-                        bridge.callHandler('getImageData',{},function(response) {
-                            alert(response.index);
-                            alert(response.images);
-                            var images=JSON.parse(response.images);
-                            that.newSwiper(images,response.index)
-                        })
-                    })
-                }
-                console.log("imageList==", that.imageList, that.curImgIndex);
-                $("#showImg").click(function(){
-                    alert(11);
-                    if(jugePhoneType()==1) {
-                        blemobi.hidePic();
-                    }else{
-                        setupWebViewJavascriptBridge(function(bridge) {
-                            bridge.callHandler('hidePic',function(response) {
-                                alert(33)
-                            })
-                        })
-                    }
-                })
-            },
-            methods:{
-                newSwiper:function(images,index){
-                   var that=this;
-                    alert(images);
-                    alert(index);
-                    that.imageList=images;
-                    that.curImgIndex = index;
-                    Vue.nextTick(function(){
-                        var swiper = new Swiper('.swiper-container',{
-                            initialSlide :that.curImgIndex
-                        })
-                    })
-                },
-                downloadImg:function(src,e){
-                    e.stopPropagation();
-                    if(jugePhoneType()==1) {
-                        blemobi.downloadPic(src);
-                    }else{
-                        setupWebViewJavascriptBridge(function(bridge) {
-                            bridge.callHandler('downloadPic',src, function(response) {
-                            })
-                        })
-                    }
-                },
-            }
-        })
-    })(showImg,jQuery)
-
+    comment.showImg()
 </script>
 </body>
 </html>
