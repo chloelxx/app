@@ -520,33 +520,35 @@ var comment={};
                     })
                 },
                 votedNewsSuccess: function(objURL){
+                    var uuid=this.uuid;
                     if(jugePhoneType()==1) {
-                        var objApp= blemobi.getVotedHeadImg()
-                            ;
-                        var obj=JSON
-                            .parse(objApp);
+                        var objApp= blemobi.getVotedHeadImg();
+                        var obj=JSON.parse(objApp);
                     }else{
                         obj=JSON.parse(objURL)
                     }
-                    console.log("voteData==",this.voteData);
-
-                    console.log("voteData==",this.voteData);
                     if(obj.type==1){
                         this.voteData.push({user:
-                        {
-                            HeadImgURL: obj.headUrl,
-                            Level: obj.level
-                        }
-                        });
+                                 {
+                                    HeadImgURL: obj.headUrl,
+                                    Level: obj.level,
+                                    UUID:uuid,
+                                  }
+                         });
                         this.voteSum=this.voteSum+1;
-                        console.log("voteData==",this.voteData);
-
                     }else{
                         this.voteSum=this.voteSum-1;
-                        this.voteData.splice(this.voteData.length-1);
-                        console.log("voteData==",this.voteData);
+                        var len=this.voteData.length,voteData=this.voteData;
+                        for(var i=0;i<len;i++){
+                            if(voteData[i].user.UUID==uuid){
+                                console.log("uuid==",uuid,voteData[i].user.UUID);
+                                this.voteData.splice(i,1);
+                                break;
+                            }
+                        }
                     }
-                }, showImg:function(e, index){
+                },
+                showImg:function(e, index){
                     e.stopPropagation();
                     var that=this
                     that.imageList=[];
@@ -576,7 +578,8 @@ var comment={};
                         return "暂无地址"
                     }
                     return p;
-                }, loadMoreCom:function(){
+                },
+                loadMoreCom:function(){
                     var
                         that=this;
                     var urlObj=parseAppURL();
@@ -604,8 +607,7 @@ var comment={};
                         }
                     )
                 },
-                beforeTime:function
-                    (publicTime){
+                beforeTime:function(publicTime){
                     var publicTime = new Date(publicTime);
                     var
                         nowTime=Math.floor((new Date())/1000);
