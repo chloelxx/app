@@ -199,8 +199,8 @@
                             </div>
                         </div>
                         <div class="audio" v-if="list.audio">
-                            <audio :src="list.audio.url" style="display: none" controls></audio>
-                            <div class="details">
+                            <audio :src="list.audio.url" style="display: none" controls @click="reallyPlay($event)"></audio>
+                            <div class="details" @click="playAudio(list.audio.length)">
                                 <div class="series sprit">
                                     <span></span>
                                 </div>

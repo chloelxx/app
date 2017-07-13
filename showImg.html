@@ -118,17 +118,11 @@
                     that.newSwiper(images,obj.index);
                 }else{
                     setupWebViewJavascriptBridge(function(bridge) {
-                        bridge.callHandler('getImageData',function(response) {
+                        bridge.callHandler('getImageData',{},function(response) {
                             alert(response.index);
                             alert(response.images);
-                            that.imageList=response.images;
-                            that.curImgIndex = response.index;
-                            Vue.nextTick(function(){
-                                var swiper = new Swiper('.swiper-container',{
-                                    initialSlide :that.curImgIndex
-                                })
-                            })
-                           // that.newSwiper(response.images,response.index)
+                            var images=JSON.parse(response.images);
+                            that.newSwiper(images,response.index)
                         })
                     })
                 }
