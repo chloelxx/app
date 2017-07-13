@@ -1,87 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=8">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
+    <meta charset="UTF-8">
     <title>资讯详情</title>
-    <link rel="stylesheet" href="dist/css/list.css">
+    <link rel="stylesheet" href="dist/css/list02.css">
     <link rel="stylesheet" href="dist/css/swiper.min.css">
-
-    <!-- Demo styles -->
     <style>
-        body {
-            background: #eee;
-            font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
-            font-size: 20px;
-            color:#000;
-            margin: 0;
-            padding: 0;
+        .swiper-slide {
+            /*text-align: center;*/
+            font-size: 18px;
+            background: #000;
+            align-items: center;
+            justify-content: center;
+            width:100%;
+            display: flex;
+            flex-direction:column
+        }
+        .swiperImg {
+            align-items: center;
+            justify-content: center;
+            width:100%;
+            /*display: flex;*/
+        }
+
+        .swiperDetail{
+            position: absolute;
+            bottom:0;
         }
         .swiper-container {
-            position: fixed;
             width: 100%;
             height: 100%;
-            margin: 20px auto;
+            overflow: hidden;
+            background-color: #000;
         }
-        .swiper-slide {
-            text-align: center;
-            font-size: 40px;
-            background: #000;
-            display: -webkit-box;
-            display: -ms-flexbox;
-            display: -webkit-flex;
-            display: flex;
-            -webkit-box-pack: center;
-            -ms-flex-pack: center;
-            -webkit-justify-content: center;
-            justify-content: center;
-            -webkit-box-align: center;
-            -ms-flex-align: center;
-            -webkit-align-items: center;
-            align-items: center;
+        [v-cloak]{
+            display: none;
+        }
+        body{
+            overflow: hidden;
+            height:100%;
+        }
+        #showImg img{
+            width:100%;
         }
     </style>
 </head>
 <body>
 <!-- Swiper -->
-<div id="img">
+<div id="showImg" class="showImg">
     <div class="swiper-container">
         <div class="swiper-wrapper">
-            <div class="swiper-slide">
-                <div class="swiperImg"><img :src="img.src" :data-src="img.lazysrc"></div>
+           <div class="swiper-slide" v-for="(img,key) in imageList">
+               <div class="swiperImg"><img :src="img.src" :data-src="img.lazysrc"></div>
                 <div style="width:100%;color:white;padding-bottom: 10px;" class="swiperDetail details">
-                    <div class="series text16" id="seriesImg">
-                        <a style="padding:0px 10px">{{key+1}}/{{imageList.length}}</a>
+                        <div class="series text16" id="seriesImg">
+                            <a style="padding:0px 10px">{{key+1}}/{{imageList.length}}</a>
+                        </div>
+                        <div class="expires text14">
+                            <a class="btn">查看原图{{img.size}}</a>
+                        </div>
+                        <div class="allTimes">
+                            <span class="download" @click="downloadImg(img.src,$event)"></span>
+                        </div>
                     </div>
-                    <div class="expires text14">
-                        <a class="btn">查看原图{{img.size}}</a>
-                        <a style="padding:0px 10px">{{key}}/{{imageList.length}}</a>
-                    </div>
-                    <div class="allTimes">
-                        <span class="download" @click="downloadImg(img.src)"></span>
-                    </div>
-                </div>
-            </div>
+           </div>
         </div>
     </div>
 </div>
 
-
-<!-- Swiper JS -->
+<script src="dist/js/jquery3.js"></script>
+<script src="dist/js/vue.js"></script>
 <script src="dist/js/swiper.min.js"></script>
-
-<!-- Initialize Swiper -->
 <script>
-    (function(){
-        var vm=new Vue({
-            el:"#img",
+    function jugePhoneType(){
+        var ua=navigator.userAgent.toLowerCase();
+        if(/android/.test(ua)){
+            return 1
+        }else if(/iphone|ipad|ipod/.test(ua)){
+            return 2
+        }else{
+            return -1
+        }
+    }
+    /*这段代码是固定的，必须要放到js中*/
+    function setupWebViewJavascriptBridge(callback) {
+        if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
+        if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
+        window.WVJBCallbacks = [callback];
+        var WVJBIframe = document.createElement('iframe');
+        WVJBIframe.style.display = 'none';
+        WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
+        document.documentElement.appendChild(WVJBIframe);
+        setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
+    }
+    var showImg={};
+    (function(self,$){
+        self.img=new Vue({
+            el:"#showImg",
             data:{
-
+               imageList:[],
+               curImgIndex:0,
+            },
+            mounted:function(){
+                var that=this,obj;
+                if(jugePhoneType()==1) {
+                    var jsStr = blemobi.getImageData();
+                     obj = JSON.parse(jsStr);
+                    var images= JSON.parse(obj.images);
+                    alert(obj.index);
+                    that.newSwiper(images,obj.index);
+                }else{
+                    setupWebViewJavascriptBridge(function(bridge) {
+                        bridge.callHandler('getImageData',function(response) {
+                            alert(response.index);
+                            alert(response.images);
+                            that.imageList=response.images;
+                            that.curImgIndex = response.index;
+                            Vue.nextTick(function(){
+                                var swiper = new Swiper('.swiper-container',{
+                                    initialSlide :that.curImgIndex
+                                })
+                            })
+                           // that.newSwiper(response.images,response.index)
+                        })
+                    })
+                }
+                console.log("imageList==", that.imageList, that.curImgIndex);
+                $("#showImg").click(function(){
+                    alert(11);
+                    if(jugePhoneType()==1) {
+                        blemobi.hidePic();
+                    }else{
+                        setupWebViewJavascriptBridge(function(bridge) {
+                            bridge.callHandler('hidePic',function(response) {
+                                alert(33)
+                            })
+                        })
+                    }
+                })
+            },
+            methods:{
+                newSwiper:function(images,index){
+                   var that=this;
+                    alert(images);
+                    alert(index);
+                    that.imageList=images;
+                    that.curImgIndex = index;
+                    Vue.nextTick(function(){
+                        var swiper = new Swiper('.swiper-container',{
+                            initialSlide :that.curImgIndex
+                        })
+                    })
+                },
+                downloadImg:function(src,e){
+                    e.stopPropagation();
+                    if(jugePhoneType()==1) {
+                        blemobi.downloadPic(src);
+                    }else{
+                        setupWebViewJavascriptBridge(function(bridge) {
+                            bridge.callHandler('downloadPic',src, function(response) {
+                            })
+                        })
+                    }
+                },
             }
         })
-    })()
-    var swiper = new Swiper('.swiper-container',{
-        initialSlide :2
-    });
+    })(showImg,jQuery)
+
 </script>
 </body>
 </html>

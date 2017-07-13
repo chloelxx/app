@@ -145,7 +145,23 @@ ul.classify-meun li:hover,ul.classify-meun li:focus,ul.classify-meun li:active{
     justify-content: center;
     z-index:999;
 }
-#cover img{
+#showImg,.showImg{
+    /* width: 100%;*/
+    display: flex;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    overflow-x: hidden;
+    overflow-y: hidden;
+    align-items: center;
+    justify-content: center;
+    z-index:999;
+}
+#cover img,#showImg img{
     width: 100%;
 }
 span{

@@ -3,29 +3,35 @@
 <head>
     <meta charset="utf-8">
     <title>Swiper demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+
     <!-- Link Swiper's CSS -->
     <link rel="stylesheet" href="dist/css/swiper.min.css">
 
     <!-- Demo styles -->
     <style>
+    html, body {
+        position: relative;
+        height: 100%;
+    }
     body {
         background: #eee;
         font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
-        font-size: 20px;
+        font-size: 14px;
         color:#000;
         margin: 0;
         padding: 0;
     }
-  /*  .swiper-container {
-        position: fixed;
+    .swiper-container {
         width: 100%;
         height: 100%;
-        margin: 20px auto;
     }
     .swiper-slide {
         text-align: center;
-        font-size: 40px;
+        font-size: 18px;
         background: #fff;
+
+        /* Center slide text vertically */
         display: -webkit-box;
         display: -ms-flexbox;
         display: -webkit-flex;
@@ -38,7 +44,10 @@
         -ms-flex-align: center;
         -webkit-align-items: center;
         align-items: center;
-    }*/
+    }
+        .swiper-slide img{
+            width:100%;
+        }
     </style>
 </head>
 <body>
@@ -47,7 +56,17 @@
         <div class="swiper-wrapper">
             <div class="swiper-slide"><img src="dist/img/5.jpg"></div>
             <div class="swiper-slide"><img src="dist/img/00.jpg"></div>
+            <div class="swiper-slide">Slide 3</div>
+            <div class="swiper-slide">Slide 4</div>
+            <div class="swiper-slide">Slide 5</div>
+            <div class="swiper-slide">Slide 6</div>
+            <div class="swiper-slide">Slide 7</div>
+            <div class="swiper-slide">Slide 8</div>
+            <div class="swiper-slide">Slide 9</div>
+            <div class="swiper-slide">Slide 10</div>
         </div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination"></div>
     </div>
 
     <!-- Swiper JS -->
@@ -55,8 +74,9 @@
 
     <!-- Initialize Swiper -->
     <script>
-    var swiper = new Swiper('.swiper-container',{
-        initialSlide :2
+    var swiper = new Swiper('.swiper-container', {
+        pagination: '.swiper-pagination',
+        paginationClickable: true
     });
     </script>
 </body>

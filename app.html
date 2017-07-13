@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
     <meta charset="UTF-8">
     <title>资讯详情页</title>
-    <link href="dist/css/list.css" rel="stylesheet">
+    <link href="dist/css/list02.css" rel="stylesheet">
     <link rel="stylesheet" href="dist/css/swiper.min.css">
     <style>
         @media screen and (min-width:600px) and (max-width:900px){
@@ -93,7 +93,7 @@
                             <div style="float: left;">
                                 <p class="text14" style="line-height: 100%">{{list.author.Nickname}}</p>
                                 <a class="text12 colorGray" style="line-height: 100%">
-                                    {{index+1}}楼&nbsp;
+                                    {{list.seqNo}}楼&nbsp;
                                     {{publishTime(list.createTime*1000)}}
                                 </a>
                             </div>
@@ -173,7 +173,7 @@
                             <div style="float: left;">
                                 <p class="text14" style="line-height: 100%">{{list.author.Nickname}}</p>
                                 <a class="text12 colorGray" style="line-height: 100%">
-                                    {{index+1}}楼&nbsp;
+                                    {{list.seqNo}}楼&nbsp;
                                     {{publishTime(list.createTime*1000)}}
                                 </a>
                             </div>
@@ -317,16 +317,43 @@
             }
         })
     }
+    /*这段代码是固定的，必须要放到js中*/
+    function setupWebViewJavascriptBridge(callback) {
+        if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
+        if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
+        window.WVJBCallbacks = [callback];
+        var WVJBIframe = document.createElement('iframe');
+        WVJBIframe.style.display = 'none';
+        WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
+        document.documentElement.appendChild(WVJBIframe);
+        setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
+    }
+    function jugePhoneType(){
+        var ua=navigator.userAgent.toLowerCase();
+        if(/android/.test(ua)){
+            return 1
+        }else if(/iphone|ipad|ipod/.test(ua)){
+            return 2
+        }else{
+            return -1
+        }
+    }
     function personPage(uuid){
         event.stopPropagation();
         console.log(uuid);
-        alert(uuid);
-        blemobi.jumpPersonInfo(uuid.toString())
+        if(jugePhoneType()==1) {
+            blemobi.jumpPersonInfo(uuid.toString())
+        }else{
+            setupWebViewJavascriptBridge(function(bridge) {
+                bridge.callHandler('jumpPersonInfo',{uuid:uuid}, function(response) {
+
+                })
+            })
+        }
     }
     var comment={};
     function configIP(){
       var url=  window.location.host;
-        alert(url);
         if(url=="sz1-test-sep-static.oss-cn-shenzhen.aliyuncs.com"){
             return "http://lb1qa1sep.blemobi.com:80";
         }else{
@@ -334,16 +361,6 @@
         }
     }
     (function(self,$){
-        function jugePhoneType(){
-            var ua=navigator.userAgent.toLowerCase();
-            if(/android/.test(ua)){
-                return 1
-            }else if(/iphone|ipad|ipod/.test(ua)){
-                return 2
-            }else{
-                return -1
-            }
-        }
         function request(url,fn){
             $.ajax({
 
@@ -466,17 +483,6 @@
                 }
             })
         }
-        /*这段代码是固定的，必须要放到js中*/
-        function setupWebViewJavascriptBridge(callback) {
-            if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
-            if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
-            window.WVJBCallbacks = [callback];
-            var WVJBIframe = document.createElement('iframe');
-            WVJBIframe.style.display = 'none';
-            WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
-            document.documentElement.appendChild(WVJBIframe);
-            setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
-        }
         self.vm=new Vue({
            el:"#app",
            data:{
@@ -494,7 +500,8 @@
                hotItems:[],
                swiper:null,
                hot:0,
-               uuid:""
+               uuid:"",
+               currentImgIndex:0,
            },
            mounted:function() {
                var cxtURL,that=this;
@@ -507,23 +514,18 @@
                    this.getAppURLData(parseURL);
                    that.uuid=parseURL.uuid;
                }else{
-                   alert("ios")
                    setupWebViewJavascriptBridge(function(bridge) {
                        bridge.callHandler('getFrameUrl',{}, function(response) {
-                           alert(response);
                            var parseURL=parseAppURL(response);
-                           alert(parseURL);
                            that.getAppURLData(parseURL);
                            that.uuid=parseURL.uuid;
                        })
                        bridge.registerHandler('comment.vm.votedNewsSuccess',function(data,votedNewsSuccess) {
-                           alert(data);
                            that.votedNewsSuccess(data);
                        })
-                      /* bridge.registerHandler('postVote',function(data,votedNewsSuccess) {
-                           alert(data);
-                           that.votedNewsSuccess(data);
-                       })*/
+                       bridge.registerHandler('comment.vm.getCommentID',function(data,getCommentID) {
+                           that.getCommentID(data);
+                       })
                    })
                }
              },
@@ -565,36 +567,30 @@
                                console.log(_this)
                                $(_this).click(function () {
                                    that.imageList=that.contentImg;
+                                   var jsStr=JSON.stringify(that.imageList);
                                    if(jugePhoneType()==1){
-                                       blemobi.showPic();
+                                       blemobi.jumpToShowImgPage("http://192.168.7.207:82/showImg.html", jsStr,index);
                                    }else{
                                        setupWebViewJavascriptBridge(function(bridge) {
-                                           bridge.callHandler('showPic',{}, function(response) {
-                                               alert(response);
-                                               var parseURL=parseAppURL(response);
-                                               alert(parseURL);
-                                               that.getAppURLData(parseURL);
+                                           bridge.callHandler('jumpToShowImgPage',{"url":"http://192.168.7.207:82/showImg.html","images":jsStr,"index":index}, function(response) {
+                                             /*  $('body').css({"height":"100%","overflow":"hidden"});
+                                               console.log("eee", index);
+                                               $("#cover").css("display", "flex");
+                                               Vue.nextTick(function(){
+                                                   that.swiper = new Swiper('.swiper-container', {
+                                                       initialSlide: index
+                                                   });
+                                                   console.log("swiper==",that.swiper)
+                                               })*/
                                            })
                                        })
                                    }
-
-//                                   $('html').css("height","100%").css("overflow","hidden");
-                                   $('body').css({"height":"100%","overflow":"hidden"});
-                                   console.log("eee", index);
-                                   $("#cover").css("overflow-y", "hidden").css("display", "flex");
-                                   Vue.nextTick(function(){
-                                        that.swiper = new Swiper('.swiper-container', {
-                                           initialSlide: index
-                                       });
-                                       console.log("swiper==",that.swiper)
-                                   })
 
                                })
                            })
                        })
                    })
                    var hotURL=configIP()+"/comment/guest/loadcomment?count=20&offset=0&sort=3&"+urlObj.comment;
-                   alert(hotURL);
                    request(hotURL,function(data){
                        if(data.comments&&data.comments.length>0) {
                            that.hotItems = data.comments;
@@ -628,7 +624,6 @@
                    var voteURL=configIP()+"/v1/news/guest/vote/users?offset=0&count=6&id="+urlObj.postid;
                    request(voteURL,function(data){
                        console.log("data==",data);
-                       alert(data);
                        if(data.list){
                            that.voteSum=data.total;
                            that.voteData=data.list;
@@ -643,10 +638,6 @@
                            }else{
                                setupWebViewJavascriptBridge(function(bridge) {
                                    bridge.callHandler('hidePic',{}, function(response) {
-                                       alert(22);
-                                       var parseURL=parseAppURL(response);
-                                       alert(parseURL);
-                                       that.getAppURLData(parseURL);
                                    })
                                })
                            }
@@ -669,6 +660,16 @@
                        })
                    }
                },
+               popShowImg:function(){
+                   var index=this.currentImgIndex;
+                   $('body').css({"height":"100%","overflow":"hidden"});
+                   $("#cover").css("display", "flex");
+                   Vue.nextTick(function(){
+                       that.swiper = new Swiper('.swiper-container', {
+                           initialSlide: index
+                       });
+                   })
+               },
                jumpSubCom:function(id){
                    if(jugePhoneType()==1) {
                        blemobi.jumpSecondComment(id);
@@ -678,7 +679,6 @@
                          })
                        })
                    }
-
                },
                sendClosePicToWeb11:function(){
                    $("body").css("overflow", "auto");
@@ -728,9 +728,6 @@
                    }else{
                        setupWebViewJavascriptBridge(function(bridge) {
                            bridge.callHandler('clickVoted',{id:list.id,vote:v,index:index}, function(resp) {
-                               alert(resp);
-//                               var res=JSON.parse(resp);
-                               alert("22="+resp);
                                var res=resp.split(",")
                                that.votedSuccess(res[0],res[1],res[2]);
                            })
@@ -751,10 +748,8 @@
                                break;
                            }
                        }
-                       alert("hot="+this.hot);
                       var list=this.items[i];
                    }else{
-                       alert("hot="+this.hot);
                       var list=this.items[key];
                        for(var i=0;i<lenHot;i++){
                            if(hotItems[i].id==id){
@@ -786,29 +781,24 @@
                     *@param uuid 用户uuid
                     *@return 成功返回PCommentExt,失败返回PResult
                     */
-                   alert(id);
                    var url = configIP()+"/v1.7/comment/guest/detail?id=" + id + "&uuid=" + that.uuid;
-                   alert(url);
-                   if(jugePhoneType()==1) {
-                       request(url, function (data) {
-                           if (data) {
-                               that.items.splice(0,0,data);
-                               console.log(data)
-                           }
-                       })
-                   }else{
-
-                   }
+              //     if(jugePhoneType()==1) {
+                   request(url, function (data){
+                       if (data) {
+                           that.items.splice(0,0,data);
+                           console.log(data)
+                       }
+                   })
+//                   }else{
+//
+//                   }
                },
                votedNewsSuccess:function(objURL){
-                   alert(11)
                    if(jugePhoneType()==1) {
                         var objApp= blemobi.getVotedHeadImg();
                         var obj=JSON.parse(objApp);
                    }else{
-                       alert(objURL);
                        obj=JSON.parse(objURL)
-                       alert(obj);
                    }
                    console.log("voteData==",this.voteData);
 
@@ -833,32 +823,34 @@
                    e.stopPropagation();
                    var that=this
                    that.imageList=[];
+                   var img= $(e.currentTarget).parent().find("img");
+                   for(var i=0;i<img.length;i++){
+                       that.imageList.push({src:$(img[i]).attr("src")}) ;
+                   }
+                   var jsStr=JSON.stringify(that.imageList);
                    if(jugePhoneType()==1) {
-                       blemobi.showPic();
+                       blemobi.jumpToShowImgPage("http://192.168.7.207:82/showImg.html", jsStr,index);
                    }else{
-                       setupWebViewJavascriptBridge(function(bridge) {
+                      /* setupWebViewJavascriptBridge(function(bridge) {
                            bridge.callHandler('showPic',{}, function(res) {
-
+                               var img= $(e.currentTarget).parent().find("img");
+                               for(var i=0;i<img.length;i++){
+                                   that.imageList.push({src:$(img[i]).attr("src")}) ;
+                               }
+                               Vue.nextTick(function(){
+                                   $("body").css("overflow","hidden");
+                                   $("#cover").css("display","flex");
+                                   var swiper = new Swiper('.swiper-container',{
+                                       initialSlide :index
+                                   });
+                               })
+                           })
+                       })*/
+                       setupWebViewJavascriptBridge(function(bridge) {
+                           bridge.callHandler('jumpToShowImgPage',{"url":"http://192.168.7.207:82/showImg.html","images":jsStr,"index":index}, function(response) {
                            })
                        })
                    }
-                   var img= $(e.currentTarget).parent().find("img");
-                   console.log("ddd", $(e.currentTarget).parent().find("img"),e);
-//                   e.stopPropagation();
-                   for(var i=0;i<img.length;i++){
-                       console.log("ggg",$(img[i]).attr("src"))
-                       that.imageList.push({src:$(img[i]).attr("src")}) ;
-                   }
-                   alert(index+1);
-//                   Vue.nextTick(function(){
-                       console.log("eee",index+1);
-                       $("body").css("overflow","hidden");
-                       $("#cover").css("display","flex");
-                  console.log("swiper==",that.swiper) ;
-                   /*    var swiper = new Swiper('.swiper-container',{
-                           initialSlide :index
-                       });*/
-//                   })
                },
                address:function(p){
                  if(p==""){
@@ -947,7 +939,6 @@
                },
            }
        })
-//        return vm;
     })(comment,jQuery)
 </script>
 </body>
