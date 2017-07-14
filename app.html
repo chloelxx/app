@@ -67,25 +67,25 @@
 <div id="app">
     <div class="text16 padding" id="content" v-html="context" v-cloak>
     </div>
-    <div class="countMemberTop" v-cloak @click="jumpToVotedList()">
+    <div class="countMemberTop" v-cloak @click="jumpToVotedList()" v-if="voteSum>0">
         <div style="float: left;">
             <a class="headerImg" v-for="(vote,key) in voteData" v-if="key<5">
-                <img :src="vote.user.HeadImgURL" style="width: 100%;border-radius: 50%;">
+                <img :src="vote.user.HeadImgURL" style="width: 100%;height:100%;border-radius: 50%;">
                 <span :class="setLevel(vote.user.Level)"></span>
             </a>
         </div>
-        <div style="float: right;line-height:inherit" class="text12">
+        <div style="float: right;line-height:inherit" class="text12" >
            {{voteSum}}人点赞
             <span class="sumTop"></span>
         </div>
     </div>
-    <div class="hotComment" id="commentBarHot">热门评论</div>
+    <div class="hotComment" id="commentBarHot" v-if="hotItems.length">热门评论</div>
     <div class="text14 padding" id="hot" v-cloak>
         <ol class="comments-items">
             <li class="bbs-post stairCom" v-for="(list,index) in hotItems">
                 <div class="bbs-post-self" :id="list.id" @click="jumpSubCom(list.id)">
                     <div class="bbs-headPic">
-                        <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
+                        <img :data-lazy="list.author.HeadImgURL" :alt="list.author.Nickname">
                         <span :class="setLevel(list.author.Level)"></span>
                     </div>
                     <div class="bbs-comment-body">
@@ -132,7 +132,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div style="background-color: white;">
+                        <div style="background-color: white;" v-if="list.position">
                             <a class="colorGray text12">
                                 <span class="address"></span>
                                 {{address(list.position)}}
@@ -158,14 +158,17 @@
             </li>
         </ol>
     </div>
-    <div style="background-color: #F0F0F0;height:0.2rem"></div>
-    <div class="hotComment" id="commentBarAll">全部评论</div>
+    <div style="background-color: #F0F0F0;height:0.2rem" v-if="hotItems.length"></div>
+    <div class="hotComment" id="commentBarAll"  v-if="items.length" v-cloak="">
+        全部评论
+        <p style="float: right;" class="color7A1AE0" @click="sortCom()">{{sortComment.text}}<span :class="[sortComment.sort?'sortComments':'sortCommentsRe']" style="float:right"></span></p>
+    </div>
     <div class="allComment padding" v-cloak id="all">
-        <ol class="comments-items">
+        <ol class="comments-items" v-if="items.length">
             <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id">
                 <div class="bbs-post-self" @click="jumpSubCom(list.id)">
                     <div class="bbs-headPic">
-                        <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
+                        <img :data-lazy="list.author.HeadImgURL" :alt="list.author.Nickname">
                         <span :class="setLevel(list.author.Level)"></span>
                     </div>
                     <div class="bbs-comment-body">
@@ -212,7 +215,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div style="background-color: white;">
+                        <div style="background-color: white;" v-if="list.position">
                             <a class="colorGray text12">
                                 <span class="address"></span>
                                 {{address(list.position)}}
@@ -239,6 +242,7 @@
             <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" @click="loadMoreCom()">加载更多评论</div>
         </ol>
     </div>
+    <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" v-if="items.length==0"><p>暂无评论</p></div>
     <div class="cover" id="cover">
         <div class="swiper-container">
             <div class="swiper-wrapper">
@@ -260,7 +264,6 @@
             </div>
         </div>
     </div>
-    <button style="display: block;padding:10px;"><a @click="tools()">dddddd</a></button>
 </div>
 <div class="cover" id="tips" style="align-content: center;flex-direction:column;background-color: transparent">
     <div style="padding:10px 5px;background-color: rgba(0,0,0,0.5);border-radius: 4px;"></div>

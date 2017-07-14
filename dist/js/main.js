@@ -176,7 +176,7 @@ var comment={};
         }
 
     }
-    function parseAppURL(url){
+    function parseAppURL(url,that){
         var arr = url.split("&bodyurl=");
         var UUID = arr[0].split("?");
         var postid = arr[0].split(/&|=/);
@@ -186,18 +186,36 @@ var comment={};
             postid:postid[3],
             uuid:postid[1]
         }
+        that.comment=UUID[1];
         return obj;
+    }
+    function showLazyImgs() {
+        var imgs = $("img");
+        console.log("1111")
+        var len = imgs.length;
+        var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+        var viewportSize = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        for (var i = 0; i < len; i++) {
+            var x = scrollTop + viewportSize - $(imgs[i]).offset().top;
+            if (x > 0) {
+                $(imgs[i]).attr("src", $(imgs[i]).attr("data-lazy"));
+            }
+            else {
+                break;
+            }
+        }
     }
     function setPosition(){
         //全部评论和热门评论显示在顶部
-        var hTop=$(" #commentBarHot ").offset().top;
-        var aTop=$("#commentBarAll").offset().top
+        var hTop=$(" #commentBarHot").offset().top;
+        var aTop=$("#commentBarAll").offset().top;
         $(window).scroll(function(){
             var h=$("#all").css("height");
             var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
             var viewportSize = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-            var x =scrollTop+viewportSize- hTop- $(window).height()-10;
-            var y=scrollTop+viewportSize-aTop-$(window).height()-10;
+            var x =scrollTop + viewportSize- hTop- $(window).height()-50;
+            var y=scrollTop + viewportSize-aTop-$(window).height()-50;
+            console.log("x,y",$(window).scrollTop(),hTop, $(window).height());
             if(x>=0){
                 $("#commentBarHot").css("position","fixed").css("top","0").css("left",0).css("right",0);
                 $("#commentBarAll").css("position","relative");
@@ -210,6 +228,7 @@ var comment={};
             }else{
                 $("#commentBarAll").css("position", "relative");
             }
+            showLazyImgs();
         })
     }
      self.loadVM=function(){
@@ -232,6 +251,11 @@ var comment={};
                 hot: 0,
                 uuid: "",
                 currentImgIndex: 0,
+                comment:"",
+                sortComment:{
+                     sort:0,//正序1，倒序0,倒序的是最新发表的在前面
+                     text:"倒序",
+                },
             },
             mounted: function () {
                 var cxtURL, that = this;
@@ -239,14 +263,14 @@ var comment={};
                     cxtURL = window.blemobi.getFrameUrl();
                     console.log("cxtURL==", cxtURL);
                     var url = JSON.parse(cxtURL);
-                    var parseURL = parseAppURL(url.url);
+                    var parseURL = parseAppURL(url.url,that);
                     console.log("parseURL==", parseURL);
                     this.getAppURLData(parseURL);
                     that.uuid = parseURL.uuid;
                 } else {
                     setupWebViewJavascriptBridge(function (bridge) {
                         bridge.callHandler('getFrameUrl', {}, function (response) {
-                            var parseURL = parseAppURL(response);
+                            var parseURL = parseAppURL(response,that);
                             that.getAppURLData(parseURL);
                             that.uuid = parseURL.uuid;
                         })
@@ -258,8 +282,37 @@ var comment={};
                         })
                     })
                 }
+                $(window).scroll(function(){
+                    showLazyImgs();
+                })
             },
             methods: {
+                sortCom:function(){
+                    var that=this;
+                    if(this.sortComment.sort==1) {
+                        that.sortComment = {
+                            text: "倒序",
+                            sort: 0,
+                        }
+                    }else{
+                        that.sortComment = {
+                            text: "正序",
+                            sort: 1,
+                        }
+                    }
+                    var comURL = configIP() + "/comment/guest/loadcomment?count=20&offset=0&sort="+this.sortComment.sort+"&" + this.comment;
+                    request(comURL, function (data) {
+                        console.log("data", data)
+                        if (data.comments && data.comments.length > 0) {
+                            that.items = data.comments;
+                            that.offset = 20;
+                            Vue.nextTick(function () {
+                                setImgWidht()
+                                setPosition()
+                            })
+                        }
+                    })
+                },
                 splitAtUser: function (str) {
                     var exg = /\[図舙\:\/\/((?!\s{2}\]).)+\s{2}\]/gi, that = this;
                     var sy = str.replace(exg, function (word) {
@@ -281,18 +334,23 @@ var comment={};
                         uu = "http://192.168.5.105/comment/guest/loadcomment?count=2&postid=19&offset=0&uuid=1493048811581296819";
                     request(urlObj.htmlurl, function (data) {
                         console.log("data", data)
-                        that.context = data;
+                        //that.context = data;
                         var content = data;
                         var img = new Image();
                         if (content != "") {
                             if (content.indexOf("<img") != -1) {
-                                content.replace(/<img [^>]*src=['"]([^'"]+)[^>]*>/gi, function (match, capture) {
+                              var strImg= content.replace(/<img [^>]*src=['"]([^'"]+)[^>]*>/gi, function (match, capture) {
+                                    console.log("match,capture",match,capture);
                                     that.contentImg.push({src: capture});
+                                    return '<img data-lazy="'+capture+'">';
                                 })
                             }
+                            console.log("src==",strImg);
+                            that.context=strImg;
                         }
                         console.log("img==", that.contentImg);
                         Vue.nextTick(function () {
+                            showLazyImgs();
                             $("#content img").each(function (index, _this) {
                                 console.log(_this)
                                 $(_this).click(function () {
@@ -407,7 +465,7 @@ var comment={};
                         blemobi.jumpSecondComment(id);
                     } else {
                         setupWebViewJavascriptBridge(function (bridge) {
-                            bridge.callHandler('jumpSecondComment', {id: id}, function (response) {
+                              bridge.callHandler('jumpSecondComment', {id: id}, function (response) {
                             })
                         })
                     }
@@ -573,21 +631,18 @@ var comment={};
                     }
                 },
                 address: function(p){
-                    if(p==
-                        ""){
+                    if(p== ""){
                         return "暂无地址"
                     }
                     return p;
                 },
                 loadMoreCom:function(){
-                    var
-                        that=this;
-                    var urlObj=parseAppURL();
+                    var that=this;
                     var
 //                           comURL="http://192.168.5.105/comment/guest/loadcomment?count=20&postid="+urlObj.postid+"&uuid="+urlObj.uuid+"&offset="+that.offset,
                         uu="http://192.168.5.105/comment/guest/loadcomment?count=2&postid=19&offset=0&uuid=1493048811581296819",
-                        url= "http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&"+urlObj.comment
-                    uu1="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&uuid=1493051392875521593&postid=36";
+                        url= "http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&sort="+that.sortComment.sort+that.comment;
+                    //uu1="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&uuid=1493051392875521593&postid=36";
                     request(url,function(data){
                             Tips(
                                 data.comments.length);
@@ -639,18 +694,17 @@ var comment={};
                 },
                 publishTime:function(publicTime){
                     var publicTime=new Date(publicTime),now=new Date();
-                    var nowTime=Math.floor((new Date())/1000);
-                    var dd=Math.floor((nowTime- publicTime)/3600);
+                    var dd=Math.floor((now- publicTime)/3600000);
                     var time=0;
                     if(publicTime.toDateString()===now.toDateString()){
                         time= publicTime.getHours()+"："+ publicTime.getMinutes();
-                    }else if(dd >= 1&& dd<=24*365)
+                    }else if(dd >= 1&& dd<24*365)
                     {
-                        time=(publicTime.getMonth() + 1) + "/" + publicTime.getDate()+"/";
+                        console.log("dd==",dd)
+                        time=(publicTime.getMonth() + 1) + "/" + publicTime.getDate();
                     }
                     else{
-                        time= publicTime.getFullYear()+"/"+
-                            publicTime.getMonth()+1+"/"+publicTime.getDate()+"/";
+                        time= publicTime.getFullYear()+"/"+ (publicTime.getMonth()+1)+"/"+publicTime.getDate();
                     }
                     return time.toLocaleString();
                 },

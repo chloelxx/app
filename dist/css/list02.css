@@ -13,6 +13,7 @@ body {
     background-color: #fff;
     font-size: 0.16rem;
     height:100%;
+    color:#333;
 }
 #content img{
     width:100%;
@@ -87,14 +88,13 @@ ul.classify-meun li:hover,ul.classify-meun li:focus,ul.classify-meun li:active{
     overflow: hidden;
 }
 .sendComLI{
-    padding:10px;
+    padding:10px 10px 0 10px;
 }
 .all-content{
     overflow: hidden;
     margin-left:15px;
     min-height:73px;
 }
-
 .bbs-comment-footer{
     box-sizing: border-box;
     overflow: hidden;
@@ -217,6 +217,18 @@ span{
     display: inline-block;
     background-position:-15.5px -62px;
     vertical-align: middle;
+}
+.sortComments{
+    display: inline-block;
+    background-position: -40.5px -19px;
+    vertical-align: middle;
+    width: 26px;
+}
+.sortCommentsRe{
+    display: inline-block;
+    background-position:-76.5px -19px;
+    vertical-align: middle;
+    width: 26px;
 }
 .download{
     display: inline-block;
@@ -366,8 +378,9 @@ span{
 .thumbnailHidden>img,.oneImg>img,.twoImg>img {
     width: auto;
     height: auto;
-    max-width: 100%;
+    min-width: 100%;
     min-height: 100%;
+    max-width: 100%;
 }
 .comment-img{
 
