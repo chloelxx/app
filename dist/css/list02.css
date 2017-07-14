@@ -87,9 +87,6 @@ ul.classify-meun li:hover,ul.classify-meun li:focus,ul.classify-meun li:active{
 .bbs-post-self{
     overflow: hidden;
 }
-.sendComLI{
-    padding:10px 10px 0 10px;
-}
 .all-content{
     overflow: hidden;
     margin-left:15px;
@@ -164,14 +161,15 @@ ul.classify-meun li:hover,ul.classify-meun li:focus,ul.classify-meun li:active{
 #cover img,#showImg img{
     width: 100%;
 }
-span{
+.iconImg{
     width: 22px;
     height: 20px;
     overflow: hidden;
-    background: url(../../dist/img/icon.png) no-repeat;
-    /*background-size:249px 163.5px;*/
+    background-image: url(../../dist/img/icon.png);
+    background-repeat: no-repeat;
     background-size:249px 163.5px;
     vertical-align: middle;
+    display: inline-block;
 }
 .sumTop{
     display: inline-block;
@@ -189,6 +187,7 @@ span{
 .subComment{
     background-color: #F0F0F0;
     margin-left:0.36rem;
+    padding:0.1rem 0 0.1rem 0.1rem;
 }
 .showBgImg11{
     width: 100%;
@@ -338,6 +337,13 @@ span{
     bottom: 0px;
     width:15px;
     height:15px;
+
+    overflow: hidden;
+    background-image: url(../../dist/img/icon.png);
+    background-repeat: no-repeat;
+    background-size:249px 163.5px;
+    vertical-align: middle;
+    display: inline-block;
 }
 .level0{
     background-position: -109px -133px;
