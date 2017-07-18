@@ -15,6 +15,10 @@ var Tips=function(str,param){
 $("#audiosrc").on("canplay",function(){
     playaudio();
 })
+function foridden() {
+    document.documentElement.style.webkitTouchCallout = "none"; //禁止弹出菜单
+    document.documentElement.style.webkitUserSelect = "none";//禁止选中
+}
 function playaudio(){
     var aud=document.getElementById("audiosrc");
     var playTimes=aud.duration;
@@ -70,9 +74,10 @@ function jugePhoneType(){
         return -1
     }
 }
-function personPage(uuid){
+function personPage(uuid,that){
     event.stopPropagation();
     console.log(uuid);
+    clearTimeout(that.clearTime);
     if(jugePhoneType()==1) {
         blemobi.jumpPersonInfo(uuid.toString())
     }else{
@@ -87,8 +92,10 @@ function configIP(){
     var url=  window.location.host;
     if(url=="sz1-test-sep-static.oss-cn-shenzhen.aliyuncs.com"){
         return "http://lb1qa1sep.blemobi.com:80";
-    }else{
+    }else if(url=="192.168.7.207:82"){
         return "http://192.168.5.105";
+    }else{
+        return "http://sep.miwutech.com"
     }
 }
 var comment={};
@@ -117,33 +124,34 @@ var comment={};
         var h=0.5625*parseInt(w);
         $(".oneImg").css("height",h+"px");
 
-        var w1=$(".twoImg").css("width");
+       var w1=$(".twoImg").css("width");
         $(".twoImg").css("height",w1);
 
-        var twoImg=$("#hot .twoImg");
+        var w2=$(".thumbnailHidden").css("width");
+        $(".thumbnailHidden").css("height",w2);
+        /*   var twoImg=$("#hot .twoImg");
         for(var i=0;i<twoImg.length;i++){
             var img=$(twoImg[i]).children("img");
-            for(var j=0;j<img.length;j++){
-                var imgw=  $(img[j]).css("width");
-                var imgh=  $(img[j]).css("height");
-                if(imgw<imgh){
-                    $(img[j]).css("width",w1).css("height","auto");
-                }else{
-                    $(img[j]).css("height",w1).css("width","auto");
-                }
+            var imgw=  $(img[0]).attr("width");
+            var imgh=  $(img[0]).attr("height");
+            console.log("imgw1,imgh1==",imgw,imgh);
+            if(imgw<imgh){
+                $(img[0]).css("width",w1).css("height","auto");
+            }else{
+                $(img[0]).css("height",w1).css("width","auto");
             }
         }
         var twoImg1=$("#all .twoImg");
         for(var i=0;i<twoImg1.length;i++){
             var img1=$(twoImg1[i]).children("img");
-            for(var j=0;j<img1.length;j++){
-                var imgw1=  $(img1[j]).css("width");
-                var imgh1=  $(img1[j]).css("height");
-                if(imgw1<imgh1){
-                    $(img1[j]).css("width",w1).css("height","auto");
-                }else{
-                    $(img1[j]).css("height",w1).css("width","auto");
-                }
+            console.log($(img1[0]))
+            var imgw1=  $(img1[0]).attr("width");
+            var imgh1=  $(img1[0]).attr("height");
+            console.log("imgw1,imgh1==",imgw1,imgh1)
+            if(imgw1<imgh1){
+                $(img1[0]).css("width",w1).css("height","auto");
+            }else{
+                $(img1[0]).css("height",w1).css("width","auto");
             }
         }
 
@@ -154,27 +162,29 @@ var comment={};
         var th=$("#hot .thumbnailHidden");
         for(var i=0;i<th.length;i++){
             var thimg=$(th[i]).children("img");
-            var thw=  $(thimg).css("width");
-            var thh=  $(thimg).css("height");
+            var thw=  $(thimg[0]).attr("width");
+            var thh=  $(thimg[0]).attr("height");
+            console.log("imgw1,imgh1==",thw,thh)
             if(thw<thh){
-                $(thimg).css("width",w2).css("height","auto");
+                $(thimg[0]).css("width",w2).css("height","auto");
             }else{
-                $(thimg).css("height",w2).css("width","auto");
+                $(thimg[0]).css("height",w2).css("width","auto");
             }
         }
 
         var th1=$("#all .thumbnailHidden");
         for(var i=0;i<th1.length;i++){
             var thimg1=$(th1[i]).children("img");
-            var thw1=  $(thimg1).css("width");
-            var thh1=  $(thimg1).css("height");
+            var thw1=  $(thimg1[0]).attr("width");
+            var thh1=  $(thimg1[0]).attr("height");
+            console.log("imgw1,imgh1==",thw1,thh1)
             if(thw1<thh1){
-                $(thimg1).css("width",w2).css("height","auto");
+                $(thimg1[0]).css("width",w2).css("height","auto");
             }else{
-                $(thimg1).css("height",w2).css("width","auto");
+                $(thimg1[0]).css("height",w2).css("width","auto");
             }
         }
-
+*/
     }
     function parseAppURL(url,that){
         var arr = url.split("&bodyurl=");
@@ -238,6 +248,12 @@ var comment={};
                      sort:0,//正序1，倒序0,倒序的是最新发表的在前面
                      text:"倒序",
                 },
+                clearTime:null,
+                action:null,
+                isPlay:false,
+                allCommentSum:0,
+                firsttime:0,
+                lasttime:0,
             },
             mounted: function () {
                 var cxtURL, that = this;
@@ -249,6 +265,9 @@ var comment={};
                     console.log("parseURL==", parseURL);
                     this.getAppURLData(parseURL);
                     that.uuid = parseURL.uuid;
+                    var sum=blemobi.getAppVoteData();
+                    console.log("sum==",sum)
+                    this.allCommentSum=parseInt(sum);
                 } else {
                     setupWebViewJavascriptBridge(function (bridge) {
                         bridge.callHandler('getFrameUrl', {}, function (response) {
@@ -256,23 +275,42 @@ var comment={};
                             that.getAppURLData(parseURL);
                             that.uuid = parseURL.uuid;
                         })
+                        bridge.callHandler('getAppVoteData', {}, function (data) {
+                            that.allCommentSum=data;
+                        })
                         bridge.registerHandler('comment.vm.votedNewsSuccess', function (data, votedNewsSuccess) {
                             that.votedNewsSuccess(data);
                         })
                         bridge.registerHandler('comment.vm.getCommentID', function (data, getCommentID) {
-                            that.getCommentID(data.id,data.index);
+                            that.getCommentID(data);
                         })
                         bridge.registerHandler("comment.vm.updataComment", function (data, updataComment) {
                             alert(data);
                             that.updataComment(data.id,data.index);
                         })
+                        bridge.registerHandler("comment.vm.stopPlay", function (data, stopPlay) {
+                            alert(data);
+                            that.stopPlay();
+                        })
                     })
+                }
+                var vid=$("video");
+                for(var i=0;i<vid.length;i++){
+                    console.log("video");
+                    $(vid[i])[0].pause();
                 }
             },
             methods: {
+                stopPlay:function(){
+                    var aud= $("audio"),vid=$("video");
+                    for(var i=0;i<aud.length;i++){
+                        $(aud[i])[0].pause();
+                    }
+                },
                 sortCom:function(){
                     var that=this;
-                    if(this.sortComment.sort==1) {
+                    var sort=this.sortComment.sort;
+                    if(sort==1) {
                         that.sortComment = {
                             text: "倒序",
                             sort: 0,
@@ -289,9 +327,13 @@ var comment={};
                         if (data.comments && data.comments.length > 0) {
                             that.items = data.comments;
                             that.offset = 20;
+
                             Vue.nextTick(function () {
                                 setImgWidht()
-                                setPosition()
+                                if(data.comments.length!=20){
+                                    $("#loadMore").html("已加载全部");
+                                }
+                               // setPosition()
                             })
                         }
                     })
@@ -305,11 +347,26 @@ var comment={};
                         var uuid = uname[1].substring(0, uname[1].indexOf(",")).toString();
                         var name = uname[1].substring(uname[1].indexOf(",") + 1);
                         console.log("uuidName==", uuid, name);
-                        var s = '<a data-uuid="' + uuid + '" style="color:#a922ff" onclick=\'personPage("' + uuid + '")\'>' + name + '</a>';
+                        var s = '<a data-uuid="' + uuid + '" style="color:#a922ff" onclick=\'comment.vm.personPage("' + uuid + '")\'>' + name + '</a>';
                         return s;
                     })
                     return sy
                 },
+                personPage :function(uuid){
+                     var that=this;
+                     event.stopPropagation();
+                     console.log(uuid);
+                     clearTimeout(that.clearTime);
+                     if(jugePhoneType()==1) {
+                         blemobi.jumpPersonInfo(uuid.toString())
+                     }else{
+                         setupWebViewJavascriptBridge(function(bridge) {
+                             bridge.callHandler('jumpPersonInfo',{uuid:uuid}, function(response) {
+
+                             })
+                         })
+                     }
+                 },
                 getAppURLData: function (urlObj) {
                     var that = this;
                     that.items = [];
@@ -331,6 +388,12 @@ var comment={};
                         }
                         console.log("img==", that.contentImg);
                         Vue.nextTick(function () {
+                           var vid= $("#content video");
+                            console.log("vid",vid);
+                            for(var i=0;i<vid.length;i++){
+                                console.log(i)
+                                $(vid[i])[0].pause();
+                            }
                             $("#content img").each(function (index, _this) {
                                 console.log(_this)
                                 $(_this).click(function () {
@@ -359,7 +422,7 @@ var comment={};
                             that.hotItems = data.comments;
                             Vue.nextTick(function () {
                                 setImgWidht()
-                                setPosition()
+                                //setPosition()
                             })
                         }
                     })
@@ -369,9 +432,13 @@ var comment={};
                         if (data.comments && data.comments.length > 0) {
                             that.items = data.comments;
                             that.offset = 20;
+
                             Vue.nextTick(function () {
                                 setImgWidht()
-                                setPosition()
+                                if(data.comments.length!=20){
+                                    $("#loadMore").html("已加载全部");
+                                }
+                                //setPosition()
                             })
                         }
                     })
@@ -430,17 +497,107 @@ var comment={};
                         })
                     }
                 },
-                popShowImg: function () {
-                    var index = this.currentImgIndex;
-                    $('body').css({"height": "100%", "overflow": "hidden"});
-                    $("#cover").css("display", "flex");
-                    Vue.nextTick(function () {
-                        that.swiper = new Swiper('.swiper-container', {
-                            initialSlide: index
-                        });
+                deleteComment11:function(list,index,flag){
+                    console.log("isosssss")
+                    window.ontouchstart = function(e) { e.preventDefault(); };
+                    var e=event||window.event;
+                    e.stopPropagation();
+                    var that=this;
+                    /*if(list.author.UUID!==this.uuid){
+                        return;
+                    }*/
+                    that.firsttime=new Date();
+                   /* alert(111);
+                    if (jugePhoneType() == 1) {
+                        blemobi.sendDeleteMsgToApp(list.id, index, isHot.toString());
+                    } else {
+                        setupWebViewJavascriptBridge(function (bridge) {
+                            alert("ios");
+                            console.log("ggg");
+                            bridge.callHandler('sendDeleteMsgToApp', {id: list.id, index: index, isHot: isHot}, function (res) {
+                                that.deleteSuccess(res.id, res.index, res.isHot)
+                            })
+                        })
+                    }*/
+                },
+                deleteComment12:function(list,index,flag){
+                    var e=event||window.event;
+                    e.stopPropagation();
+                    var that=this;
+                    /*if(list.author.UUID!==this.uuid){
+                     return;
+                     }*/
+                    that.lasttime=new Date();
+                    var dd=that.lasttime-that.firsttime;
+                    alert(111);
+                    alert(dd);
+                    if(dd>=200&&dd<=5000) {
+                        if (jugePhoneType() == 1) {
+                            blemobi.sendDeleteMsgToApp(list.id, index, isHot.toString());
+                        } else {
+                            setupWebViewJavascriptBridge(function (bridge) {
+                                alert("ios");
+                                bridge.callHandler('sendDeleteMsgToApp', {
+                                    id: list.id,
+                                    index: index,
+                                    isHot: isHot
+                                }, function (res) {
+                                    that.deleteSuccess(res.id, res.index, res.isHot)
+                                })
+                            })
+                        }
+                    }
+                },
+                deleteComment:function(list,index,isHot){
+                    var that=this;
+                    if(list.author.UUID!==this.uuid){
+                        return;
+                    }
+                    var e=event||window.event;
+                    e.stopPropagation();
+                    e.preventDefault()
+                    console.log("dddjjj");
+                   this.clearTime=setTimeout(function(){
+                        if (jugePhoneType() == 1) {
+                            blemobi.sendDeleteMsgToApp(list.id, index, isHot.toString());
+                        } else {
+                            setupWebViewJavascriptBridge(function (bridge) {
+                                bridge.callHandler('sendDeleteMsgToApp', {id: list.id, index: index, isHot: isHot}, function (res) {
+                                    that.deleteSuccess(res.id, res.index, res.isHot)
+                                })
+                            })
+                        }
+                   },300)
+                },
+                deleteSuccess:function(id,index,isHot){
+                    var that=this;
+                    console.log("index==",index,id,isHot);
+                    if(isHot==1){
+                        for(var i=0;i<that.items.length;i++){
+                            if(that.items[i].id==id){
+                                that.items.splice(i,1);
+                                break;
+                            }
+                        }
+                        that.hotItems.splice(index,1);
+                    }else{
+                        for(var i=0;i<that.hotItems.length;i++){
+                            if(that.hotItems[i].id==id){
+                                that.hotItems.splice(i,1);
+                                break;
+                            }
+                        }
+                        that.items.splice(index,1);
+                    }
+                    that.allCommentSum=that.allCommentSum-1;
+                    Vue.nextTick(function(){
+                        setImgWidht();
                     })
                 },
                 jumpSubCom: function (id,index) {
+                    var e=event||window.event;
+                    e.stopPropagation();
+                    clearTimeout(this.clearTime);
                     if (jugePhoneType() == 1) {
                         blemobi.jumpSecondComment(id,index);
                     } else {
@@ -459,15 +616,23 @@ var comment={};
                     $("#cover").css("display", "none");
                 },
                 setLevel: function (level) {
-                    switch (level) {
-                        case 0:
-                            return "level0"
-                        case 1:
-                            return "level1"
-                        case 2:
-                            return "level2"
-                        case 3:
-                            return "level3"
+                    var arr=["level0","level1","level2","level3"];
+                    return arr[level];
+                },
+                setLevelColor:function(lv){
+                    var arr=["colorLv0","colorLv1","colorLv2","colorLv3"];
+                    return arr[lv];
+                },
+                jumpToPearsonPage:function(uuid,e){
+                    e.stopPropagation();
+                    clearTimeout(this.clearTime);
+                    if (jugePhoneType() == 1) {
+                        blemobi.jumpPersonInfo(uuid);
+                    } else {
+                        setupWebViewJavascriptBridge(function (bridge) {
+                            bridge.callHandler('jumpPersonInfo',{uuid:uuid}, function (response) {
+                            })
+                        })
                     }
                 },
                 downloadImg: function (src, e) {
@@ -484,14 +649,16 @@ var comment={};
                 likeComment: function (e, list, index, hot) {
                     var e = event || window.event;
                     e.stopPropagation();
+                    clearTimeout(this.clearTime);
                     this.dis = !this.dis;
                     this.hot = hot;
                     var v = 1, that = this;
                     if (list.vote == 1) {
                         v = 0;
                     }
-                    console.log("list", list.vote, v);
+                    console.log("list", list,list.vote, v);
                     if (jugePhoneType() == 1) {
+                        console.log("list phone",list.id)
                         blemobi.clickVoted(list.id.toString(), v.toString(), index.toString());
                     } else {
                         setupWebViewJavascriptBridge(function (bridge) {
@@ -504,42 +671,53 @@ var comment={};
 
                 },
                 votedSuccess: function (id, vote, index) {  //app点赞成功后掉web端的函数
-                    var key = parseInt(index), lenHot = this.hotItems.length, hotItems = this.hotItems,
-                        len = this.items.length, items = this.items;
+                    var key = parseInt(index), lenHot = this.hotItems.length,
+                        len = this.items.length;
                     console.log("this.items==", this.items);
-                    console.log("this.items==", items, hotItems);
-                    console.log("this.items==", this.hot);
+                    console.log("this.items==", this.hotItems);
+                    /* console.log("this.items==", this.hot);*/
                     if (this.hot == 1) {
+                        console.log("111333")
                         var hotlist = this.hotItems[key];
                         for (var i = 0; i < len; i++) {
-                            if (items[i].id == id) {
+                            if (this.items[i].id == id) {
                                 break;
                             }
                         }
                         var list = this.items[i];
                     } else {
+                        console.log("22222233")
                         var list = this.items[key];
                         for (var i = 0; i < lenHot; i++) {
-                            if (hotItems[i].id == id) {
+                            if (this.hotItems[i].id == id) {
                                 break;
                             }
                         }
                         var hotlist = this.hotItems[i];
                     }
                     if (vote == 0) {
-                        list.vote = 0;
-                        list.upvotes = list.upvotes - 1;
-                        hotlist.vote = 0;
-                        hotlist.upvotes = hotlist.upvotes - 1;
+                        console.log("vote==",vote);
+                        if(this.items.length>0) {
+                            list.vote = 0;
+                            list.upvotes = list.upvotes - 1;
+                        }
+                        if(this.hotItems.length>0) {
+                            hotlist.vote = 0;
+                            hotlist.upvotes = hotlist.upvotes - 1;
+                        }
                     } else {
-                        list.vote = 1;
-                        list.upvotes = list.upvotes + 1;
-                        hotlist.vote = 1;
-                        hotlist.upvotes = hotlist.upvotes + 1;
+                        console.log("vote==",vote);
+                        if(this.items.length>0) {
+                            list.vote = 1;
+                            list.upvotes = list.upvotes + 1;
+                        }
+                        if(this.hotItems.length>0) {
+                            hotlist.vote = 1;
+                            hotlist.upvotes = hotlist.upvotes + 1;
+                        }
                     }
-
                 },
-                getCommentID: function (id) {
+                getCommentID: function (id) {  //插入评论
                     var that = this;
                     /*
                      *@note 按评论ID查询评论详情
@@ -552,16 +730,72 @@ var comment={};
                     var url = configIP()+ "/v1.7/comment/guest/detail?id=" + id + "&uuid=" + that.uuid;
                     request(url, function (data){
                         if (data&&!data.code) {
-                            that.items.splice(0,0,data);
+                            if(that.sortComment.sort==1&&that.items.length<20){
+                                var len=that.items.length;
+                                that.items.splice(len,0,data);
+                            }else{
+                                that.items.splice(0, 0, data);
+                            }
+                            that.allCommentSum=that.allCommentSum+1;
                             Vue.nextTick(function(){
-                                setImgWidht();
+                                 setImgWidht();
                             })
-
-                            console.log(data)
                         }
                     })
                 },
-                updataComment: function (id,index) {
+                playAudio:function(size, e,list){
+                    e.stopPropagation();
+                    clearTimeout(this.clearTime)
+                    var aud= $(e.currentTarget).prev();
+                    console.log("swss=",$(e.currentTarget).prev());
+                    var a=["audio0","audio1","audio2","audio3"];
+                    var arr=["0px -94px","-36px -94px","-73px -94px","-108px -94px"];
+                    var i= 0,that=this;
+                    var icon= $(e.currentTarget).find(".iconImg");
+                    console.log("iconImg=",icon,list);
+                    var action=null;
+                    that.isPlay=!that.isPlay; //true为播放，false为暂停
+                    if(that.isPlay||!list.isPlay){
+                        var audios=$("audio");
+                        for(var a=0;a<audios.length;a++){
+                            $(audios[a])[0].pause();
+                            $(audios[a]).next().find(".iconImg").css("backgroundPosition",arr[0]);
+                        }
+                        $(aud)[0].play();
+                        Vue.set(list,"isPlay",true);
+                        console.log("list==",list);
+                        action= setInterval(function(){
+                           // $(icon).removeClass("audio0");
+                            console.log("iconImg=", $(icon).removeClass("audio0"));
+                            console.log("arrr==",arr[(i+1)%4]);
+                            var src=arr[(i+1)%4];
+                            $(icon).css("backgroundPosition",src);
+                            console.log(aud[0].currentTime,size);
+                            i++;
+                            if(aud[0].currentTime*1000<size*1000&&that.isPlay){
+
+                            }else if(aud[0].currentTime*1000>=size*1000){
+                                clearInterval(action);
+                                Vue.set(list,"isPlay",false);
+                                $(icon).css("backgroundPosition",arr[0]);
+                                aud[0].currentTime=0;
+                                aud[0].pause();
+                            }else{
+                                that.isPlay=!that.isPlay;
+                                clearInterval(action);
+                                Vue.set(list,"isPlay",false);
+                                aud[0].pause();
+                            }
+                        },500)
+                    }else{
+                        Vue.set(list,"isPlay",false);
+                        //var src=arr[0];
+                        clearInterval(action);
+                        //$(icon).css("backgroundPosition",src);
+                        aud[0].pause();
+                    }
+                },
+                updataComment: function (id,index) {   //更新评论
                     var that = this;
                     console.log("id==",id);
                     console.log("index==",index)
@@ -576,14 +810,16 @@ var comment={};
                     var url = configIP()+ "/v1.7/comment/guest/detail?id=" + id + "&uuid=" + that.uuid;
                     request(url, function (data){
                         if (data) {
+                            var obj= $.extend({},data);
+                            var obj1= $.extend({},data);
                             for(var i=0;i<that.hotItems.length;i++){
                                 if(that.hotItems[i].id==id){
-                                    that.hotItems.splice(i,1,data);
+                                    that.hotItems.splice(i,1,obj);
                                 }
                             }
                             for(var i=0;i<that.items.length;i++){
                                 if(that.items[i].id==id){
-                                    that.items.splice(i,1,data);
+                                    that.items.splice(i,1,obj1);
                                     console.log("that.items==")
                                 }
                             }
@@ -599,20 +835,17 @@ var comment={};
                         obj=JSON.parse(objURL)
                     }
                     if(obj.type==1){
-                        this.voteData.push({user:
-                                 {
+                        this.voteData.splice(0,0, {user:{
                                     HeadImgURL: obj.headUrl,
                                     Level: obj.level,
                                     UUID:uuid,
-                                  }
-                         });
+                                  }});
                         this.voteSum=this.voteSum+1;
                     }else{
                         this.voteSum=this.voteSum-1;
                         var len=this.voteData.length,voteData=this.voteData;
                         for(var i=0;i<len;i++){
                             if(voteData[i].user.UUID==uuid){
-                                console.log("uuid==",uuid,voteData[i].user.UUID);
                                 this.voteData.splice(i,1);
                                 break;
                             }
@@ -622,6 +855,7 @@ var comment={};
                 showImg:function(e, index){
                     e.stopPropagation();
                     var that=this
+                    clearTimeout(that.clearTime);
                     that.imageList=[];
                     var img= $(e.currentTarget).parent().find("img");
                     for(var i=0; i<img.length; i++){
@@ -654,55 +888,49 @@ var comment={};
                     var
 //                           comURL="http://192.168.5.105/comment/guest/loadcomment?count=20&postid="+urlObj.postid+"&uuid="+urlObj.uuid+"&offset="+that.offset,
                         uu="http://192.168.5.105/comment/guest/loadcomment?count=2&postid=19&offset=0&uuid=1493048811581296819",
-                        url= "http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&sort="+that.sortComment.sort+that.comment;
+                        url= "http://192.168.5.105/comment/guest/loadcomment?count=20&offset="+that.offset+"&sort="+that.sortComment.sort+"&"+that.comment;
                     //uu1="http://192.168.5.105/comment/guest/loadcomment?count=2&offset=0&uuid=1493051392875521593&postid=36";
                     request(url,function(data){
-                            Tips(
-                                data.comments.length);
                             if(data&&data.comments){
                                 console.log("data==",data);
-                                if(!
-                                        that.items){
+                                if(!that.items){
                                     that.items=[];
                                     console.log(that.items)
                                 }
                                 that.items=that.items.concat(data.comments);
                                 Vue.nextTick(function(){
                                     setImgWidht();
+                                    if(data.comments.length!=20){
+                                        console.log("dddd")
+                                        $("#loadMore").html("已加载全部");
+                                    }
                                 })
-                                that.offset=that.offset+2;
+                                that.offset=that.offset+20;
                             }
                         }
                     )
                 },
                 beforeTime:function(publicTime){
                     var publicTime = new Date(publicTime);
-                    var
-                        nowTime=Math.floor((new Date())/1000);
-                    var dd=Math.floor(( nowTime-publicTime)/60);
+                    var nowTime=new Date();
+                    var dd=Math.floor(( nowTime-publicTime)/60000);
                     var time=0;
-                    var objEdit={
-                        showEdit:true, time:0,
+                    if(dd==0){
+                        time="刚刚"
                     }
-                    if(dd<1){
-                        time="1分钟";
-                    }
-                    else if(dd>=1
-                        && dd<60){
-                        time=dd+"分钟";
+                    else if(dd>0 && dd<60){
+                        time=dd+"分钟前";
                     }else if(dd>=60 && dd<24*60){
-                        time=Math.ceil(dd/
-                                60)+"小时";
-                    } else if(dd >=24 * 60 && dd <= 24* 3*60)
-                    {
-                        time=Math.ceil(dd/(60*24))+ "天";
-                        objEdit.showEdit=false
-                        ;
+                        time=Math.ceil(dd/60)+"小时前";
+                    } else if(dd >=24 * 60 && dd <= 24* 7*60) {
+                        time=Math.ceil(dd/(60*24))+ "天前";
                     } else{
-                        time=new Date(publicTime*1000).toLocaleString();
-                        objEdit.showEdit=false;
+                       if(publicTime.getFullYear()==nowTime.getFullYear()){
+                           time=(publicTime.getMonth() + 1) + "/" + publicTime.getDate();
+                       }else{
+                           time= publicTime.getFullYear()+"/"+ (publicTime.getMonth()+1)+"/"+publicTime.getDate();
+                       }
                     }
-                    objEdit.time=time;
                     return time;
                 },
                 publishTime:function(publicTime){

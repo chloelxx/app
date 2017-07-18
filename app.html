@@ -10,10 +10,10 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
     <meta charset="UTF-8">
     <title>资讯详情页</title>
-    <link href="dist/css/list02.css" rel="stylesheet">
+    <link href="dist/css/list02.css?v09" rel="stylesheet">
     <link rel="stylesheet" href="dist/css/swiper.min.css">
     <style>
-        @media screen and (min-width:600px) and (max-width:900px){
+ /*       @media screen and (min-width:600px) and (max-width:900px){
             html {
                font-size: 875%;
             }
@@ -27,7 +27,7 @@
             html {
                 font-size: 625%;
             }
-        }
+        }*/
         .swiper-slide {
             /*text-align: center;*/
             font-size: 18px;
@@ -64,7 +64,7 @@
     </style>
 </head>
 <body>
-<div id="app">
+<div id="app" onload="foridden()">
     <div class="text16 padding" id="content" v-html="context" v-cloak>
     </div>
     <div class="countMemberTop" v-cloak @click="jumpToVotedList()" v-if="voteSum>0">
@@ -80,21 +80,21 @@
         </div>
     </div>
     <div class="hotComment" id="commentBarHot" v-if="hotItems.length">热门评论</div>
-    <div class="text14 padding" id="hot" v-cloak>
+    <div class="text14 padding" id="hot" v-cloak v-if="hotItems.length">
         <ol class="comments-items">
-            <li class="bbs-post stairCom" v-for="(list,index) in hotItems">
+            <li class="bbs-post stairCom" v-for="(list,index) in hotItems"  @mousedown="deleteComment11(list,index,1)" @mouseup="deleteComment12(list,index,1)">
                 <div class="bbs-post-self" :id="list.id" @click="jumpSubCom(list.id,index)">
-                    <div class="bbs-headPic">
+                    <div class="bbs-headPic" @click="jumpToPearsonPage(list.author.UUID,$event)">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
                         <span :class="setLevel(list.author.Level)"></span>
                     </div>
                     <div class="bbs-comment-body">
                         <div class="pm">
                             <div style="float: left;">
-                                <p class="text14" style="line-height: 100%">{{list.author.Nickname}}</p>
+                                <p :class="setLevelColor(list.author.Level)+' text14'" style="line-height: 100%">{{list.author.Nickname}}</p>
                                 <a class="text12 colorGray" style="line-height: 100%">
                                     {{list.seqNo}}楼&nbsp;
-                                    {{publishTime(list.createTime*1000)}}
+                                    {{beforeTime(list.createTime*1000)}}
                                 </a>
                             </div>
                             <div class="sprit likeIcon">
@@ -109,20 +109,20 @@
                         </div>
                         <div class="comment-img"  v-if="list.images&&list.images.list&&list.images.list.length>0">
                             <div class="oneImg" v-if="list.images.list.length==1" v-for="(img,key) in list.images.list"  @click="showImg($event,key)">
-                                <img class="img-rounded" :src="img.ThumbUrl">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high ? 'setHeight':'setWidth']" :src="img.ThumbUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
                             </div>
                             <div class="twoImg" v-if="list.images.list.length==2" v-for="(img,key) in list.images.list"  @click="showImg($event,key)">
-                                <img class="img-rounded" :src="img.ThumbUrl">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high ? 'setHeight':'setWidth']" :src="img.ThumbUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
                             </div>
                             <div class="thumbnailHidden" v-if="list.images.list.length>=3" v-for="(img,key) in list.images.list" @click="showImg($event,key)">
-                                <img class="img-rounded" :src="img.ThumbUrl">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high ? 'setHeight':'setWidth']" :src="img.ThumbUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
                             </div>
                         </div>
                         <div class="audio" v-if="list.audio">
                             <audio :src="list.audio.url" style="display: none" controls></audio>
-                            <div class="details">
+                            <div class="details"  @click="playAudio(list.audio.length,$event,list)">
                                 <div class="series sprit">
-                                    <span class="iconImg"></span>
+                                    <span class="iconImg audio0"></span>
                                 </div>
                                 <div class="expires">
                                     <span class="color7A1AE0"  v-if="list.audio.expires>0">{{list.audio.expires}}后过期</span>
@@ -141,18 +141,18 @@
                     </div>
                     <!--二级评论的页面-->
                     <ul class="subComment" v-if="list.subComments&&list.subComments.length>0">
-                        <li class="sendComLI" v-for="(subCom,key) in list.subComments">
+                        <li class="sendComLI" v-for="(subCom,key) in list.subComments" @click="jumpSubCom(list.id,index)">
                             <div class="subComments" style="overflow: hidden">
                                 <div class="comment-text">
                                     <p class="detailWord">
-                                        <span style="color:red">{{subCom.author.Nickname}}：</span>
+                                        <span :class="setLevelColor(subCom.author.Level)">{{subCom.author.Nickname}}：</span>
                                         {{subCom.text}}
-                                        <span class="publicTime">{{beforeTime(subCom.createTime*1000)}}前</span>
+                                        <span class="publicTime">{{beforeTime(subCom.createTime*1000)}}</span>
                                     </p>
                                 </div>
                             </div>
                         </li>
-                        <div class="color7A1AE0 text14" v-if="list.children>2" @click="jumpSubCom(list.id,index)">更多{{list.children}}条回复</div>
+                        <div class="color7A1AE0 text14" v-if="list.children>2">更多{{list.children}}条回复</div>
                     </ul>
                 </div>
             </li>
@@ -161,23 +161,26 @@
     <div style="background-color: #F0F0F0;height:0.2rem" v-if="hotItems.length"></div>
     <div class="hotComment" id="commentBarAll"  v-if="items.length" v-cloak="">
         全部评论
-        <p style="float: right;" class="color7A1AE0" @click="sortCom()">{{sortComment.text}}<span :class="[sortComment.sort?'sortComments':'sortCommentsRe','iconImg']" style="float:right"></span></p>
+        <p style="float: right;" class="color7A1AE0 text12" @click="sortCom()">
+            <span style="vertical-align: middle;">{{sortComment.text}}</span>
+            <span :class="[sortComment.sort?'sortComments':'sortCommentsRe','iconImg']" style="float:right"></span>
+        </p>
     </div>
     <div class="allComment padding" v-cloak id="all">
         <ol class="comments-items" v-if="items.length">
-            <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id">
+            <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id" @mousedown="deleteComment(list,index,1)">
                 <div class="bbs-post-self" @click="jumpSubCom(list.id,index)">
-                    <div class="bbs-headPic">
+                    <div class="bbs-headPic" @click="jumpToPearsonPage(list.author.UUID,$event)">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
                         <span :class="setLevel(list.author.Level)+' iconImg'"></span>
                     </div>
                     <div class="bbs-comment-body">
                         <div class="pm">
                             <div style="float: left;">
-                                <p class="text14" style="line-height: 100%">{{list.author.Nickname}}</p>
+                                <p :class="setLevelColor(list.author.Level)+' text14'" style="line-height: 100%">{{list.author.Nickname}}</p>
                                 <a class="text12 colorGray" style="line-height: 100%">
                                     {{list.seqNo}}楼&nbsp;
-                                    {{publishTime(list.createTime*1000)}}
+                                    {{beforeTime(list.createTime*1000)}}
                                 </a>
                             </div>
                             <div class="sprit likeIcon">
@@ -192,20 +195,20 @@
                         </div>
                         <div class="comment-img"  v-if="list.images&&list.images.list&&list.images.list.length>0">
                             <div class="oneImg" v-if="list.images.list.length==1" v-for="(img,key) in list.images.list" @click="showImg($event,key)">
-                                <img class="img-rounded" :src="img.MediaUrl">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high?'setHeight':'setWidth']" :src="img.MediaUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
                             </div>
                             <div class="twoImg" v-if="list.images.list.length==2" v-for="(img,key) in list.images.list" @click="showImg($event,key)">
-                                <img class="img-rounded" :src="img.MediaUrl">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high?'setHeight':'setWidth']" :src="img.MediaUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
                             </div>
                             <div class="thumbnailHidden" v-if="list.images.list.length>=3" v-for="(img,key) in list.images.list" @click="showImg($event,key)">
-                                <img class="img-rounded" :src="img.MediaUrl">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high?'setHeight':'setWidth']" :src="img.MediaUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
                             </div>
                         </div>
                         <div class="audio" v-if="list.audio">
                             <audio :src="list.audio.url" style="display: none" controls @click="reallyPlay($event)"></audio>
-                            <div class="details" @click="playAudio(list.audio.length)">
+                            <div class="details" @click="playAudio(list.audio.length,$event,list)">
                                 <div class="series sprit">
-                                    <span></span>
+                                    <span class="iconImg audio0"></span>
                                 </div>
                                 <div class="expires">
                                     <span class="color7A1AE0" v-if="list.audio.expires>0">{{list.audio.expires}}后过期</span>
@@ -224,25 +227,28 @@
                     </div>
                     <!--二级评论的页面-->
                     <ul class="subComment" v-if="list.subComments&&list.subComments.length>0">
-                        <li class="sendComLI" v-for="(subCom,key) in list.subComments">
+                        <li class="sendComLI" v-for="(subCom,key) in list.subComments"  @click="jumpSubCom(list.id,index)">
                             <div class="subComments" style="overflow: hidden">
                                 <div class="comment-text">
                                     <p class="detailWord">
-                                        <span style="color:red">{{subCom.author.Nickname}}：</span>
+                                        <span :class="setLevelColor(subCom.author.Level)">{{subCom.author.Nickname}}：</span>
                                         {{subCom.text}}
-                                        <span class="publicTime">{{beforeTime(subCom.createTime*1000)}}前</span>
+                                        <span class="publicTime">{{beforeTime(subCom.createTime*1000)}}</span>
                                     </p>
                                 </div>
                             </div>
                         </li>
-                        <div class="color7A1AE0 text14" v-if="list.children>2" @click="jumpSubCom(list.id,index)">更多{{list.children}}条回复</div>
+                        <div class="color7A1AE0 text14" v-if="list.children>2">更多{{list.children}}条回复</div>
                     </ul>
                 </div>
             </li>
-            <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" @click="loadMoreCom()">加载更多评论</div>
+            <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" id="loadMore" @click="loadMoreCom()">加载更多评论</div>
         </ol>
     </div>
-    <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" v-if="items.length==0"><p>暂无评论</p></div>
+    <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" v-cloak v-if="items.length==0">
+        <div class="iconImg noDataTips"></div>
+        <p>还没有人发言呢！快抢沙发！</p>
+    </div>
     <div class="cover" id="cover">
         <div class="swiper-container">
             <div class="swiper-wrapper">
@@ -268,12 +274,28 @@
 <div class="cover" id="tips" style="align-content: center;flex-direction:column;background-color: transparent">
     <div style="padding:10px 5px;background-color: rgba(0,0,0,0.5);border-radius: 4px;"></div>
 </div>
+<div id="moust" style="width:100%;height:100px;">
+    asdfasdfffff
+</div>
 <script src="dist/js/jquery3.js"></script>
 <script src="dist/js/vue.js"></script>
 <script src="dist/js/swiper.min.js"></script>
-<script src="dist/js/main.js"></script>
+<script src="dist/js/main.js?v019"></script>
 <script>
     window.comment.vm=comment.loadVM();
+    $("#moust").mouseup(function(){
+        console.log("mousedown");
+        alert("111");
+        var ft=new Date();
+        var action=setTimeout(function(){
+            console.log(111);
+            var lt=new Date();
+            var dd=lt-ft;
+            if(lt-ft<=500)
+            alert(dd);
+            alert(11112222);
+        },300);
+    })
 </script>
 </body>
 </html>
