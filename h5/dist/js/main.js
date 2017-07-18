@@ -254,7 +254,6 @@ var comment={};
                 allCommentSum:0,
                 firsttime:0,
                 lasttime:0,
-                longPress:true,
             },
             mounted: function () {
                 var cxtURL, that = this;
@@ -556,12 +555,10 @@ var comment={};
                     }
                     var e=event||window.event;
                     e.stopPropagation();
-                    e.preventDefault();
+                    e.preventDefault()
                     console.log("dddjjj");
-                    alert(222221);
-                    that.longPress=false;
-                    console.log("e==",e);
-                   //this.clearTime=setTimeout(function(){
+                    alert(11)
+                   this.clearTime=setTimeout(function(){
                         if (jugePhoneType() == 1) {
                             blemobi.sendDeleteMsgToApp(list.id, index, isHot.toString());
                         } else {
@@ -572,7 +569,7 @@ var comment={};
                                 })
                             })
                         }
-                   //},300)
+                   },300)
                 },
                 deleteSuccess:function(id,index,isHot){
                     var that=this;
@@ -595,24 +592,21 @@ var comment={};
                         that.items.splice(index,1);
                     }
                     that.allCommentSum=that.allCommentSum-1;
-                    that.longPress=true;
                     Vue.nextTick(function(){
                         setImgWidht();
                     })
                 },
                 jumpSubCom: function (id,index) {
-                    var e=event||window.event,that=this;
+                    var e=event||window.event;
                     e.stopPropagation();
                     clearTimeout(this.clearTime);
-                    if(that.longPress) {
-                        if (jugePhoneType() == 1) {
-                            blemobi.jumpSecondComment(id, index);
-                        } else {
-                            setupWebViewJavascriptBridge(function (bridge) {
-                                bridge.callHandler('jumpSecondComment', {id: id, index: index}, function (response) {
-                                })
+                    if (jugePhoneType() == 1) {
+                        blemobi.jumpSecondComment(id,index);
+                    } else {
+                        setupWebViewJavascriptBridge(function (bridge) {
+                              bridge.callHandler('jumpSecondComment', {id: id,index:index}, function (response) {
                             })
-                        }
+                        })
                     }
                 },
                 sendClosePicToWeb11: function () {
