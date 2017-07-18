@@ -82,7 +82,7 @@
     <div class="hotComment" id="commentBarHot" v-if="hotItems.length">热门评论</div>
     <div class="text14 padding" id="hot" v-cloak v-if="hotItems.length">
         <ol class="comments-items">
-            <li class="bbs-post stairCom" v-for="(list,index) in hotItems"  @mousedown="deleteComment(list,index,1)">
+            <li class="bbs-post stairCom" v-for="(list,index) in hotItems">
                 <div class="bbs-post-self" :id="list.id" @click="jumpSubCom(list.id,index)">
                     <div class="bbs-headPic" @click="jumpToPearsonPage(list.author.UUID,$event)">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
@@ -168,8 +168,8 @@
     </div>
     <div class="allComment padding" v-cloak id="all">
         <ol class="comments-items" v-if="items.length">
-            <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id" @mousedown="deleteComment(list,index,1)">
-                <div class="bbs-post-self" @click="jumpSubCom(list.id,index)">
+            <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id">
+                <div class="bbs-post-self"  @click="jumpSubCom(list.id,index)">
                     <div class="bbs-headPic" @click="jumpToPearsonPage(list.author.UUID,$event)">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
                         <span :class="setLevel(list.author.Level)+' iconImg'"></span>

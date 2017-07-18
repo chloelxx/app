@@ -286,11 +286,11 @@ var comment={};
                             that.getCommentID(data);
                         })
                         bridge.registerHandler("comment.vm.updataComment", function (data, updataComment) {
-                            alert(data);
+                          //  alert(data);
                             that.updataComment(data.id,data.index);
                         })
                         bridge.registerHandler("comment.vm.stopPlay", function (data, stopPlay) {
-                            alert(data);
+                         //   alert(data);
                             that.stopPlay();
                         })
                     })
@@ -498,17 +498,18 @@ var comment={};
                         })
                     }
                 },
-                deleteComment11:function(list,index,flag){
+               /* deleteComment11:function(list,index,flag){
                     console.log("isosssss")
                     window.ontouchstart = function(e) { e.preventDefault(); };
                     var e=event||window.event;
                     e.stopPropagation();
                     var that=this;
-                    /*if(list.author.UUID!==this.uuid){
+                    /!*if(list.author.UUID!==this.uuid){
                         return;
-                    }*/
+                    }*!/
                     that.firsttime=new Date();
-                   /* alert(111);
+                    that.longPress=false;
+                   /!* alert(111);
                     if (jugePhoneType() == 1) {
                         blemobi.sendDeleteMsgToApp(list.id, index, isHot.toString());
                     } else {
@@ -519,30 +520,27 @@ var comment={};
                                 that.deleteSuccess(res.id, res.index, res.isHot)
                             })
                         })
-                    }*/
+                    }*!/
                 },
                 deleteComment12:function(list,index,flag){
                     var e=event||window.event;
                     e.stopPropagation();
                     var that=this;
-                    /*if(list.author.UUID!==this.uuid){
+                    /!*if(list.author.UUID!==this.uuid){
                      return;
-                     }*/
+                     }*!/
                     that.lasttime=new Date();
                     var dd=that.lasttime-that.firsttime;
                     alert(111);
                     alert(dd);
-                    if(dd>=200&&dd<=5000) {
+                    if(dd>=3&&dd<=5000) {
+
                         if (jugePhoneType() == 1) {
                             blemobi.sendDeleteMsgToApp(list.id, index, isHot.toString());
                         } else {
                             setupWebViewJavascriptBridge(function (bridge) {
                                 alert("ios");
-                                bridge.callHandler('sendDeleteMsgToApp', {
-                                    id: list.id,
-                                    index: index,
-                                    isHot: isHot
-                                }, function (res) {
+                                bridge.callHandler('sendDeleteMsgToApp', {id: list.id, index: index, isHot: isHot}, function (res) {
                                     that.deleteSuccess(res.id, res.index, res.isHot)
                                 })
                             })
@@ -561,7 +559,7 @@ var comment={};
                     alert(222221);
                     that.longPress=false;
                     console.log("e==",e);
-                   //this.clearTime=setTimeout(function(){
+                   this.clearTime=setTimeout(function(){
                         if (jugePhoneType() == 1) {
                             blemobi.sendDeleteMsgToApp(list.id, index, isHot.toString());
                         } else {
@@ -572,9 +570,9 @@ var comment={};
                                 })
                             })
                         }
-                   //},300)
-                },
-                deleteSuccess:function(id,index,isHot){
+                   },300)
+                },*/
+              /*  deleteSuccess:function(id,index,isHot){
                     var that=this;
                     console.log("index==",index,id,isHot);
                     if(isHot==1){
@@ -599,7 +597,7 @@ var comment={};
                     Vue.nextTick(function(){
                         setImgWidht();
                     })
-                },
+                },*/
                 jumpSubCom: function (id,index) {
                     var e=event||window.event,that=this;
                     e.stopPropagation();
