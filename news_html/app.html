@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <!-- <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=8">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">-->
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <title>资讯详情页</title>
+    <link href="dist/css/list02.css?v010" rel="stylesheet">
+    <link rel="stylesheet" href="dist/css/swiper.min.css">
+    <style>
+ /*       @media screen and (min-width:600px) and (max-width:900px){
+            html {
+               font-size: 875%;
+            }
+        }
+        @media screen and (min-width:415px) and (max-width:600px){
+            html {
+                font-size: 750%;
+            }
+        }
+        @media screen and (min-width:375px) and (max-width:415px){
+            html {
+                font-size: 625%;
+            }
+        }*/
+        .swiper-slide {
+            /*text-align: center;*/
+            font-size: 18px;
+            background: #000;
+            align-items: center;
+            justify-content: center;
+            width:100%;
+            display: flex;
+            flex-direction:column
+        }
+        .swiperImg {
+            align-items: center;
+            justify-content: center;
+            width:100%;
+            /*display: flex;*/
+        }
+
+        .swiperDetail{
+            position: absolute;
+            bottom:0;
+        }
+        #content{
+            word-break:break-all;
+        }
+        #cover .swiper-container {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: #000;
+        }
+        [v-cloak]{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div id="app" onload="foridden()">
+    <div class="text16 padding" id="content" v-html="context" v-cloak>
+    </div>
+    <div class="countMemberTop" v-cloak @click="jumpToVotedList()" v-if="voteSum>0">
+        <div style="float: left;">
+            <a class="headerImg" v-for="(vote,key) in voteData" v-if="key<=5">
+                <img :src="vote.user.HeadImgURL" style="width: 100%;height:100%;border-radius: 50%;">
+                <span :class="setLevel(vote.user.Level)+' iconImg'"></span>
+            </a>
+        </div>
+        <div style="float: right;line-height:inherit" class="text12" >
+           {{voteSum}}人点赞
+            <span class="iconImg sumTop"></span>
+        </div>
+    </div>
+    <div class="hotComment" id="commentBarHot" v-if="hotItems.length">热门评论</div>
+    <div class="text14 padding" id="hot" v-cloak v-if="hotItems.length">
+        <ol class="comments-items">
+            <li class="bbs-post stairCom" v-for="(list,index) in hotItems">
+                <div class="bbs-post-self" :id="list.id" @click="jumpSubCom(list.id,index)">
+                    <div class="bbs-headPic" @click="jumpToPearsonPage(list.author.UUID,$event)">
+                        <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
+                        <span :class="setLevel(list.author.Level)"></span>
+                    </div>
+                    <div class="bbs-comment-body">
+                        <div class="pm">
+                            <div style="float: left;">
+                                <p :class="setLevelColor(list.author.Level)+' text14'" style="line-height: 100%">{{list.author.Nickname}}</p>
+                                <a class="text12 colorGray" style="line-height: 100%">
+                                    {{list.seqNo}}楼&nbsp;
+                                    {{beforeTime(list.createTime*1000)}}
+                                </a>
+                            </div>
+                            <div class="sprit likeIcon">
+                                <span :class="[list.vote==1?dianzhan:downvote,'iconImg']" @click="likeComment($event,list,index,1)"></span>
+                                <a :class="[list.vote==1 ? 'color7A1AE0':'' ,'text12']">{{list.upvotes}}</a>
+                            </div>
+                        </div>
+                        <div class="comment-text">
+                            <p class="detailWord" v-html="splitAtUser(list.text)">
+                                <!--{{list.text}}-->
+                            </p>
+                        </div>
+                        <div class="comment-img"  v-if="list.images&&list.images.list&&list.images.list.length>0">
+                            <div class="oneImg" v-if="list.images.list.length==1" v-for="(img,key) in list.images.list"  @click="showImg($event,key)">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high ? 'setHeight':'setWidth']" :src="img.ThumbUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
+                            </div>
+                            <div class="twoImg" v-if="list.images.list.length==2" v-for="(img,key) in list.images.list"  @click="showImg($event,key)">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high ? 'setHeight':'setWidth']" :src="img.ThumbUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
+                            </div>
+                            <div class="thumbnailHidden" v-if="list.images.list.length>=3" v-for="(img,key) in list.images.list" @click="showImg($event,key)">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high ? 'setHeight':'setWidth']" :src="img.ThumbUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
+                            </div>
+                        </div>
+                        <div class="audio" v-if="list.audio">
+                            <audio :src="list.audio.url" style="display: none" controls></audio>
+                            <div class="details"  @click="playAudio(list.audio.length,$event,list)">
+                                <div class="series sprit">
+                                    <span class="iconImg audio0"></span>
+                                </div>
+                                <div class="expires">
+                                    <span class="color7A1AE0"  v-if="list.audio.expires>0">{{list.audio.expires}}后过期</span>
+                                </div>
+                                <div class="allTimes">
+                                    <span class="color7A1AE0">{{list.audio.length}}"</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background-color: white;" v-if="list.position">
+                            <a class="colorGray text12">
+                                <span class="iconImg address"></span>
+                                {{address(list.position)}}
+                            </a>
+                        </div>
+                    </div>
+                    <!--二级评论的页面-->
+                    <ul class="subComment" v-if="list.subComments&&list.subComments.length>0">
+                        <li class="sendComLI" v-for="(subCom,key) in list.subComments" @click="jumpSubCom(list.id,index)">
+                            <div class="subComments" style="overflow: hidden">
+                                <div class="comment-text">
+                                    <p class="detailWord">
+                                        <span :class="setLevelColor(subCom.author.Level)">{{subCom.author.Nickname}}：</span>
+                                        {{subCom.text}}
+                                        <span class="publicTime">{{beforeTime(subCom.createTime*1000)}}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        <div class="color7A1AE0 text14" v-if="list.children>2">更多{{list.children}}条回复</div>
+                    </ul>
+                </div>
+            </li>
+        </ol>
+    </div>
+    <div style="background-color: #F0F0F0;height:0.2rem" v-if="hotItems.length"></div>
+    <div class="hotComment" id="commentBarAll"  v-if="items.length" v-cloak="">
+        全部评论
+        <p style="float: right;" class="color7A1AE0 text12" @click="sortCom()">
+            <span style="vertical-align: middle;">{{sortComment.text}}</span>
+            <span :class="[sortComment.sort?'sortComments':'sortCommentsRe','iconImg']" style="float:right"></span>
+        </p>
+    </div>
+    <div class="allComment padding" v-cloak id="all">
+        <ol class="comments-items" v-if="items.length">
+            <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id">
+                <div class="bbs-post-self"  @click="jumpSubCom(list.id,index)">
+                    <div class="bbs-headPic" @click="jumpToPearsonPage(list.author.UUID,$event)">
+                        <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
+                        <span :class="setLevel(list.author.Level)+' iconImg'"></span>
+                    </div>
+                    <div class="bbs-comment-body">
+                        <div class="pm">
+                            <div style="float: left;">
+                                <p :class="setLevelColor(list.author.Level)+' text14'" style="line-height: 100%">{{list.author.Nickname}}</p>
+                                <a class="text12 colorGray" style="line-height: 100%">
+                                    {{list.seqNo}}楼&nbsp;
+                                    {{beforeTime(list.createTime*1000)}}
+                                </a>
+                            </div>
+                            <div class="sprit likeIcon">
+                                <span :class="[list.vote==1?dianzhan:downvote,'iconImg']" @click="likeComment($event,list,index,0)"></span>
+                                <a :class="[list.vote==1 ? 'color7A1AE0':'' ,'text12']">{{list.upvotes}}</a>
+                            </div>
+                        </div>
+                        <div class="comment-text">
+                            <p class="detailWord" v-html="splitAtUser(list.text)">
+                                <!--{{splitAtUser(list.text)}}-->
+                            </p>
+                        </div>
+                        <div class="comment-img"  v-if="list.images&&list.images.list&&list.images.list.length>0">
+                            <div class="oneImg" v-if="list.images.list.length==1" v-for="(img,key) in list.images.list" @click="showImg($event,key)">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high?'setHeight':'setWidth']" :src="img.MediaUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
+                            </div>
+                            <div class="twoImg" v-if="list.images.list.length==2" v-for="(img,key) in list.images.list" @click="showImg($event,key)">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high?'setHeight':'setWidth']" :src="img.MediaUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
+                            </div>
+                            <div class="thumbnailHidden" v-if="list.images.list.length>=3" v-for="(img,key) in list.images.list" @click="showImg($event,key)">
+                                <img :class="[img.ImageAttr.width>img.ImageAttr.high?'setHeight':'setWidth']" :src="img.MediaUrl" :width="img.ImageAttr.width" :height="img.ImageAttr.high">
+                            </div>
+                        </div>
+                        <div class="audio" v-if="list.audio">
+                            <audio :src="list.audio.url" style="display: none" controls @click="reallyPlay($event)"></audio>
+                            <div class="details" @click="playAudio(list.audio.length,$event,list)">
+                                <div class="series sprit">
+                                    <span class="iconImg audio0"></span>
+                                </div>
+                                <div class="expires">
+                                    <span class="color7A1AE0" v-if="list.audio.expires>0">{{list.audio.expires}}后过期</span>
+                                </div>
+                                <div class="allTimes">
+                                    <span class="color7A1AE0">{{list.audio.length}}"</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background-color: white;" v-if="list.position">
+                            <a class="colorGray text12">
+                                <span class="address iconImg"></span>
+                                {{address(list.position)}}
+                            </a>
+                        </div>
+                    </div>
+                    <!--二级评论的页面-->
+                    <ul class="subComment" v-if="list.subComments&&list.subComments.length>0">
+                        <li class="sendComLI" v-for="(subCom,key) in list.subComments"  @click="jumpSubCom(list.id,index)">
+                            <div class="subComments" style="overflow: hidden">
+                                <div class="comment-text">
+                                    <p class="detailWord">
+                                        <span :class="setLevelColor(subCom.author.Level)">{{subCom.author.Nickname}}：</span>
+                                        {{subCom.text}}
+                                        <span class="publicTime">{{beforeTime(subCom.createTime*1000)}}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        <div class="color7A1AE0 text14" v-if="list.children>2">更多{{list.children}}条回复</div>
+                    </ul>
+                </div>
+            </li>
+            <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" id="loadMore" @click="loadMoreCom()">加载更多评论</div>
+        </ol>
+    </div>
+    <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" v-cloak v-if="items.length==0">
+        <div class="iconImg noDataTips"></div>
+        <p>还没有人发言呢！快抢沙发！</p>
+    </div>
+    <div class="cover" id="cover">
+        <div class="swiper-container">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide" v-for="(img,key) in imageList">
+                    <div class="swiperImg"><img :src="img.src" :data-src="img.lazysrc"></div>
+                    <div style="width:100%;color:white;padding-bottom: 10px;" class="swiperDetail details">
+                        <div class="series text16" id="seriesImg">
+                            <a style="padding:0px 10px">{{key+1}}/{{imageList.length}}</a>
+                        </div>
+                        <div class="expires text14">
+                          <a class="btn">查看原图{{img.size}}</a>
+                        </div>
+                        <div class="allTimes">
+                            <span class="download" @click="downloadImg(img.src,$event)"></span>
+                        </div>
+                    </div>
+                </div>
+                <!--<div class="swiper-slide" v-for="(img,key) in imageList">silde {{key}}</div>-->
+            </div>
+        </div>
+    </div>
+</div>
+<div class="cover" id="tips" style="align-content: center;flex-direction:column;background-color: transparent">
+    <div style="padding:10px 5px;background-color: rgba(0,0,0,0.5);border-radius: 4px;"></div>
+</div>
+<script src="dist/js/jquery3.js"></script>
+<script src="dist/js/vue.js"></script>
+<script src="dist/js/swiper.min.js"></script>
+<script src="dist/js/main.js?v020"></script>
+<script>
+    window.comment.vm=comment.loadVM();
+</script>
+</body>
+</html>
