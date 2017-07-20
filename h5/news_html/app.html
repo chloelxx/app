@@ -1,67 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <!-- <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=8">
     <meta http-equiv="Expires" content="0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
-    <meta http-equiv="Cache" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">-->
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
     <meta charset="UTF-8">
     <title>资讯详情页</title>
-    <link href="dist/css/list02.css?v010" rel="stylesheet">
+    <link href="dist/css/list.min.css" rel="stylesheet">
     <link rel="stylesheet" href="dist/css/swiper.min.css">
-    <style>
- /*       @media screen and (min-width:600px) and (max-width:900px){
-            html {
-               font-size: 875%;
-            }
-        }
-        @media screen and (min-width:415px) and (max-width:600px){
-            html {
-                font-size: 750%;
-            }
-        }
-        @media screen and (min-width:375px) and (max-width:415px){
-            html {
-                font-size: 625%;
-            }
-        }*/
-        .swiper-slide {
-            /*text-align: center;*/
-            font-size: 18px;
-            background: #000;
-            align-items: center;
-            justify-content: center;
-            width:100%;
-            display: flex;
-            flex-direction:column
-        }
-        .swiperImg {
-            align-items: center;
-            justify-content: center;
-            width:100%;
-            /*display: flex;*/
-        }
-
-        .swiperDetail{
-            position: absolute;
-            bottom:0;
-        }
-        #content{
-            word-break:break-all;
-        }
-        .swiper-container {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000;
-        }
-        [v-cloak]{
-            display: none;
-        }
-    </style>
 </head>
 <body>
 <div id="app" onload="foridden()">
@@ -82,7 +32,7 @@
     <div class="hotComment" id="commentBarHot" v-if="hotItems.length">热门评论</div>
     <div class="text14 padding" id="hot" v-cloak v-if="hotItems.length">
         <ol class="comments-items">
-            <li class="bbs-post stairCom" v-for="(list,index) in hotItems"  @mousedown="deleteComment(list,index,1)">
+            <li class="bbs-post stairCom" v-for="(list,index) in hotItems">
                 <div class="bbs-post-self" :id="list.id" @click="jumpSubCom(list.id,index)">
                     <div class="bbs-headPic" @click="jumpToPearsonPage(list.author.UUID,$event)">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
@@ -99,7 +49,7 @@
                             </div>
                             <div class="sprit likeIcon">
                                 <span :class="[list.vote==1?dianzhan:downvote,'iconImg']" @click="likeComment($event,list,index,1)"></span>
-                                <a class="color7A1AE0 text12">{{list.upvotes}}</a>
+                                <a :class="[list.vote==1 ? 'color7A1AE0':'' ,'text12']">{{list.upvotes}}</a>
                             </div>
                         </div>
                         <div class="comment-text">
@@ -168,8 +118,8 @@
     </div>
     <div class="allComment padding" v-cloak id="all">
         <ol class="comments-items" v-if="items.length">
-            <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id" @mousedown="deleteComment(list,index,1)">
-                <div class="bbs-post-self" @click="jumpSubCom(list.id,index)">
+            <li class="bbs-post stairCom" v-for="(list,index) in items" :id="list.id">
+                <div class="bbs-post-self"  @click="jumpSubCom(list.id,index)">
                     <div class="bbs-headPic" @click="jumpToPearsonPage(list.author.UUID,$event)">
                         <img :src="list.author.HeadImgURL" :alt="list.author.Nickname">
                         <span :class="setLevel(list.author.Level)+' iconImg'"></span>
@@ -185,7 +135,7 @@
                             </div>
                             <div class="sprit likeIcon">
                                 <span :class="[list.vote==1?dianzhan:downvote,'iconImg']" @click="likeComment($event,list,index,0)"></span>
-                                <a class="color7A1AE0 text12">{{list.upvotes}}</a>
+                                <a :class="[list.vote==1 ? 'color7A1AE0':'' ,'text12']">{{list.upvotes}}</a>
                             </div>
                         </div>
                         <div class="comment-text">
@@ -245,54 +195,20 @@
             <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" id="loadMore" @click="loadMoreCom()">加载更多评论</div>
         </ol>
     </div>
-    <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" v-cloak v-if="items.length==0">
+    <div class="text14 colorGray" style="text-align: center;margin: 0.25px 0rem 0.15rem 0rem;" v-cloak v-if="isComment">
         <div class="iconImg noDataTips"></div>
         <p>还没有人发言呢！快抢沙发！</p>
-    </div>
-    <div class="cover" id="cover">
-        <div class="swiper-container">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide" v-for="(img,key) in imageList">
-                    <div class="swiperImg"><img :src="img.src" :data-src="img.lazysrc"></div>
-                    <div style="width:100%;color:white;padding-bottom: 10px;" class="swiperDetail details">
-                        <div class="series text16" id="seriesImg">
-                            <a style="padding:0px 10px">{{key+1}}/{{imageList.length}}</a>
-                        </div>
-                        <div class="expires text14">
-                          <a class="btn">查看原图{{img.size}}</a>
-                        </div>
-                        <div class="allTimes">
-                            <span class="download" @click="downloadImg(img.src,$event)"></span>
-                        </div>
-                    </div>
-                </div>
-                <!--<div class="swiper-slide" v-for="(img,key) in imageList">silde {{key}}</div>-->
-            </div>
-        </div>
     </div>
 </div>
 <div class="cover" id="tips" style="align-content: center;flex-direction:column;background-color: transparent">
     <div style="padding:10px 5px;background-color: rgba(0,0,0,0.5);border-radius: 4px;"></div>
 </div>
-<script src="dist/js/jquery3.js"></script>
+<script src="dist/js/jquery-3.2.1.min.js"></script>
 <script src="dist/js/vue.js"></script>
 <script src="dist/js/swiper.min.js"></script>
-<script src="dist/js/main.js?v019"></script>
+<script src="dist/js/main.min.js"></script>
 <script>
     window.comment.vm=comment.loadVM();
-    $("#moust").mouseup(function(){
-        console.log("mousedown");
-        alert("111");
-        var ft=new Date();
-        var action=setTimeout(function(){
-            console.log(111);
-            var lt=new Date();
-            var dd=lt-ft;
-            if(lt-ft<=500)
-            alert(dd);
-            alert(11112222);
-        },300);
-    })
 </script>
 </body>
 </html>

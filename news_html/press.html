@@ -69,12 +69,13 @@
 <body>
 <div class="container">
     <div class="section">
-        <div class="decrement" onmousedown="tapEvent(event, 'decrement')" ontouchstart="tapEvent(event, 'decrement')"><span  id="desc" onclick="desc()">－hggh</span></div>
+        <!---->
+        <div class="decrement" onclick="desc(event)" onmousedown="tapEvent(event, 'decrement')" ontouchstart="tapEvent(event, 'decrement')" ><span  id="desc">－hggh</span></div>
         <input class="number" value="1">
-        <div class="increment" onmousedown="tapEvent(event, 'increment')" ontouchstart="tapEvent(event, 'increment')"><span onclick="insc()">＋</span></div>
+        <div class="increment" onclick="desc(event)" onmousedown="tapEvent(event, 'increment')" ontouchstart="tapEvent(event, 'increment')"><span>＋</span></div>
     </div>
 </div>
-<div style="padding:10px;margin:0 auto" ontouch="longPress()" id="press">
+<div style="padding:10px;margin:0 auto" onmousedown="longPress()" onmouseup="pressUp()" onclick="clk()" id="press">
    <p onclick="touchMe()"> pressMe</p>
 </div>
 <script src="dist/js/jquery3.js"></script>
@@ -83,19 +84,27 @@
         timer: {},
         element: {},
         tapStartTime: 0,
-        type: 'increment'
+        type: 'increment',
+        tapEndTime:0,
     };
 
     function clearTapTimer() {
         clearTimeout(tapParams.timer);
+        $(tapParams.element).unbind('click',desc);
     }
-    function desc(){
-       console.log("fff")
+    function desc(e){
+       console.log("fff",e)
         $("#desc").css("color","red")
     }
     function clearTapHandlers() {
         clearTapTimer();
-
+        console.log("mouseup");
+        var dd=tapParams.tapEndTime - tapParams.startTime;
+        if(dd*1000<10){
+            console.log("dd",dd);
+            $(tapParams.element)[0].onclick=desc();
+        }
+        $(tapParams.element).unbind('click',desc);
         $(tapParams.element).unbind('mouseup', clearTapTimer)
                 .unbind('mouseleave', clearTapHandlers);
 
@@ -111,7 +120,7 @@
         aEvent.stopPropagation();
 
         tapParams = {
-            element: aEvent.target,
+            element: aEvent.currentTarget,
             startTime: new Date().getTime() / 1000,
             type: aType
         };
@@ -124,20 +133,29 @@
                 .bind('touchcencel', clearTapHandlers);
 
         changeNumber();
+        console.log("e.type==",aEvent.type);
+        console.log("event==",aEvent);
     }
 
     function changeNumber() {
 
         var currentDate = new Date().getTime() / 1000;
+        tapParams.tapEndTime=currentDate;
         var intervalTime = currentDate - tapParams.startTime;
-
+         console.log("dd==",intervalTime);
         /* 根据长按的时间改变数值变化幅度 */
-        if (intervalTime < 1) {
+        if(intervalTime*1000>200) {
+            console.log("target==",$(tapParams.element));
+            $(tapParams.element)[0].onclick=null;
+        }
+        if(intervalTime<1) {
             intervalTime = 0.5;
+//            $(tapParams.element).onclick=null;
         }
         var secondCount = intervalTime * 10;
         if (intervalTime == 3) {
             secondCount = 50;
+
         }
         if (intervalTime >= 4) {
             secondCount = 100;
@@ -156,13 +174,24 @@
 
         tapParams.timer = setTimeout('changeNumber()', 1000 / secondCount);
     }
+    var timer={
+        timer: {},
+        element: {},
+        tapStartTime: 0,
+        type: 'increment',
+        tapEndTime:0,
+    }
+    var action=null;
     function longPress(e){
         var e=event||window.event;
         e.stopPropagation();
         e.preventDefault();
-//        var action=setTimeout(function(){
-            $("#press").css("background-color","#eee")
-//        },300)
+        action=setTimeout(function(){
+            $("#press").css("background-color","#f5f7f2")
+        },300)
+    }
+    function pressUp(){
+        clearTimeout(action);
     }
     function touchMe(){
         $("#press").css("color","red")

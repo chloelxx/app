@@ -1,6 +1,7 @@
 /**
  * Created by chloe on 2017/7/4.
  */
+console.log=function(){}
 var Tips=function(str,param){
     var p="";
     $("#tips").css("display","flex");
@@ -269,6 +270,7 @@ var comment={};
                 firsttime:0,
                 lasttime:0,
                 longPress:true,
+                isComment:false,
             },
             mounted: function () {
                 var cxtURL, that = this;
@@ -350,6 +352,9 @@ var comment={};
                                 }
                                // setPosition()
                             })
+                        }else{
+                            that.isComment=true;
+                            Vue.nextTick(function () {})
                         }
                     })
                 },
@@ -387,7 +392,7 @@ var comment={};
                     that.items = [];
                     var u = "http://192.168.5.105:80/v1/news/guest/newsfeed/html?id=24",
                         uu = "http://192.168.5.105/comment/guest/loadcomment?count=2&postid=19&offset=0&uuid=1493048811581296819";
-                    request(urlObj.htmlurl, function (data) {
+                   /* request(urlObj.htmlurl, function (data) {
                         console.log("data", data)
                         that.context = data;
                         var content = data;
@@ -395,6 +400,44 @@ var comment={};
                         if (content != "") {
                             if (content.indexOf("<img") != -1) {
                               content.replace(/<img [^>]*src=['"]([^'"]+)[^>]*>/gi, function (match, capture) {
+                                    console.log("match,capture",match,capture);
+                                    that.contentImg.push({src: capture});
+                                    //return '<img data-lazy="'+capture+'">';
+                                })
+                            }
+                        }
+                        console.log("img==", that.contentImg);
+                        Vue.nextTick(function () {
+                            $("#content img").each(function (index, _this) {
+                                var showImgURL=window.location.origin+"/news_html/showImg.html";
+                                $(_this).click(function () {
+                                    that.imageList = that.contentImg;
+                                    var jsStr = JSON.stringify(that.imageList);
+                                    if (jugePhoneType() == 1) {
+                                        blemobi.jumpToShowImgPage(showImgURL, jsStr, index);
+                                    } else {
+                                        setupWebViewJavascriptBridge(function (bridge) {
+                                            bridge.callHandler('jumpToShowImgPage', {
+                                                "url": showImgURL,
+                                                "images": jsStr,
+                                                "index": index
+                                            }, function (response) {
+                                            })
+                                        })
+                                    }
+
+                                })
+                            })
+                        })
+                    })*/
+                    $("#content").load(urlObj.htmlurl,function(data){
+                        console.log("data==", data)
+                        that.context = data;
+                        var content = data;
+                        var img = new Image();
+                        if (content != "") {
+                            if (content.indexOf("<img") != -1) {
+                                content.replace(/<img [^>]*src=['"]([^'"]+)[^>]*>/gi, function (match, capture) {
                                     console.log("match,capture",match,capture);
                                     that.contentImg.push({src: capture});
                                     //return '<img data-lazy="'+capture+'">';
@@ -449,6 +492,9 @@ var comment={};
                                 }
                                 //setPosition()
                             })
+                        }else{
+                            that.isComment=true;
+                            Vue.nextTick(function () {})
                         }
                     })
                     /**
@@ -506,18 +552,18 @@ var comment={};
                         })
                     }
                 },
-               /* deleteComment11:function(list,index,flag){
+                deleteComment11:function(list,index,flag){
                     console.log("isosssss")
                     window.ontouchstart = function(e) { e.preventDefault(); };
                     var e=event||window.event;
                     e.stopPropagation();
                     var that=this;
-                    /!*if(list.author.UUID!==this.uuid){
+                    /*if(list.author.UUID!==this.uuid){
                         return;
-                    }*!/
+                    }*/
                     that.firsttime=new Date();
                     that.longPress=false;
-                   /!* alert(111);
+                   /* alert(111);
                     if (jugePhoneType() == 1) {
                         blemobi.sendDeleteMsgToApp(list.id, index, isHot.toString());
                     } else {
@@ -528,15 +574,15 @@ var comment={};
                                 that.deleteSuccess(res.id, res.index, res.isHot)
                             })
                         })
-                    }*!/
+                    }*/
                 },
                 deleteComment12:function(list,index,flag){
                     var e=event||window.event;
                     e.stopPropagation();
                     var that=this;
-                    /!*if(list.author.UUID!==this.uuid){
+                    /*if(list.author.UUID!==this.uuid){
                      return;
-                     }*!/
+                     }*/
                     that.lasttime=new Date();
                     var dd=that.lasttime-that.firsttime;
                     alert(111);
@@ -579,8 +625,8 @@ var comment={};
                             })
                         }
                    },300)
-                },*/
-              /*  deleteSuccess:function(id,index,isHot){
+                },
+                deleteSuccess:function(id,index,isHot){
                     var that=this;
                     console.log("index==",index,id,isHot);
                     if(isHot==1){
@@ -605,7 +651,7 @@ var comment={};
                     Vue.nextTick(function(){
                         setImgWidht();
                     })
-                },*/
+                },
                 jumpSubCom: function (id,index) {
                     var e=event||window.event,that=this;
                     e.stopPropagation();
@@ -927,6 +973,10 @@ var comment={};
                                     }
                                 })
                                 that.offset=that.offset+20;
+                            }else{
+                                Vue.nextTick(function(){
+                                    $("#loadMore").html("已加载全部");
+                                })
                             }
                         }
                     )
@@ -934,7 +984,7 @@ var comment={};
                 beforeTime:function(publicTime){
                     var publicTime = new Date(publicTime);
                     var nowTime=new Date();
-                    var dd=Math.floor(( nowTime-publicTime)/60000);
+                    var dd=Math.floor(( nowTime-publicTime)/60000);//分钟
                     var time=0;
                     if(dd==0){
                         time="刚刚"
@@ -1020,7 +1070,12 @@ var comment={};
                      that.curImgIndex = index;
                      Vue.nextTick(function(){
                          var swiper = new Swiper('.swiper-container',{
-                             initialSlide :that.curImgIndex
+                             paginationClickable: true,
+                             // Disable preloading of all images
+                             preloadImages: false,
+                             // Enable lazy loading
+                             lazyLoading: true,
+                             initialSlide :that.curImgIndex,
                          })
                      })
                  },
