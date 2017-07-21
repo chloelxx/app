@@ -437,7 +437,7 @@ var comment={};
                         var img = new Image();
                         if (content != "") {
                             if (content.indexOf("<img") != -1) {
-                                content.replace(/<img [^>]*src=['"]([^'"]+)[^>]*>/gi, function (match, capture) {
+                                content.replace(/<img [^>]* src=['"]([^'"]+)[^>]*>/gi, function (match, capture) {
                                     console.log("match,capture",match,capture);
                                     that.contentImg.push({src: capture});
                                     //return '<img data-lazy="'+capture+'">';
